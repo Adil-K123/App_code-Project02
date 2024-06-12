@@ -6,10 +6,10 @@ app = Flask(__name__)
 
 # Connect to MySQL
 db = mysql.connector.connect(
-    host="localhost",
+    host=os.getenv('MYSQL_HOST'),  # Use environment variable for host
     user=os.getenv('MYSQL_USER'),  # Use environment variable for username
     password=os.getenv('MYSQL_PASSWORD'),  # Use environment variable for password
-    database="product_reviews"
+    database=os.getenv('MYSQL_DATABASE'),  # Use environment variable for database
 )
 
 cursor = db.cursor()
