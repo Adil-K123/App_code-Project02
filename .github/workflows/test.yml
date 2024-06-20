@@ -21,10 +21,10 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v2
 
-            - name: Start MySql
+            - name: Start MySql and create db
               run: |
                 sudo service mysql start
-                mysql -h$MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD -e "CREATE DATABASE $MYSQL_DATABASE; USE $MYSQL_DATABASE;" 
+                mysql -h$MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD -e "CREATE DATABASE test_db; USE test_db;" 
                 mysql -h$MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD -e "CREATE TABLE reviews (id INT AUTO_INCREMENT PRIMARY KEY,name VARCHAR(255),product_name VARCHAR(255),review TEXT);"
 
             - name: Setup Python
