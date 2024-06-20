@@ -7,10 +7,10 @@ from app import app
 def test_db():
     # Connect to the test database
     db = mysql.connector.connect(
-        host="localhost",
-        user=os.getenv('MYSQL_USER'),  # Use environment variable for username
-        password=os.getenv('MYSQL_PASSWORD'),  # Use environment variable for password
-        database="product_reviews"
+        host=os.getenv('MYSQL_HOST'),          # Use environment variable for sql host
+        user=os.getenv('MYSQL_USER'),          # Use environment variable for sql username
+        password=os.getenv('MYSQL_PASSWORD'),  # Use environment variable for sql password
+        database=os.getenv('MYSQL_DATABASE')   # Use environment variable for database name
     )
 
     # Create a cursor
