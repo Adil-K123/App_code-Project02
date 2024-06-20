@@ -34,7 +34,7 @@ def index():
     reviews = cursor.fetchall()
     
     # Render the HTML template with the reviews data
-    return render_template('index.html', reviews="hello")
+    return render_template('index.html', reviews=reviews)
 
 if __name__ == '__main__':
     app.run(debug=True)
