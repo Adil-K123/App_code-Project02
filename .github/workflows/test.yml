@@ -23,7 +23,7 @@ jobs:
 
             - name: Start MySql
               run: |
-                sudo systemctl start mysql
+                systemctl start mysql
                 mysql -h$MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD -e "CREATE DATABASE $MYSQL_DATABASE; USE $MYSQL_DATABASE;" 
                 mysql -h$MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD -e "CREATE TABLE reviews (id INT AUTO_INCREMENT PRIMARY KEY,name VARCHAR(255),product_name VARCHAR(255),review TEXT);"
 
