@@ -80,7 +80,7 @@
         delete: yes
       notify: Restart productreview_app
 
-   - name: Create Python3 virtual env and install requirements
+    - name: Create Python3 virtual env and install requirements
       shell: |
         cd /home/ubuntu/flask_app_code
         python3 -m venv .venv
