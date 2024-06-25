@@ -95,7 +95,7 @@
         python3 -m venv .venv
         source .venv/bin/activate
         pip3 install requirements.txt
-      notify: Restart productreview_app.service
+      notify: Restart productreview_app
      
 
   handlers:
