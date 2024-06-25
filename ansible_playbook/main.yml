@@ -21,12 +21,6 @@
         state: latest
         update_cache: yes
 
-    - name: create rds sql database and required table from first webserver
-      tags: sql,db,rds
-      command: |
-         mysql -h{{ rds_endpoint }} -u{{ dbusername }} -p{{ dbpassword }} -e "CREATE DATABASE IF NOT EXISTS product_reviews; USE product_reviews; CREATE TABLE IF NOT EXISTS reviews (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), product_name VARCHAR(255), review TEXT);"
-      when: "'{{ WebServer1 }}' in group_names"
-
     - name: Configure nginx
       tags: nginx,configure nginx,sites-available
       copy:
@@ -86,12 +80,12 @@
         delete: yes
       notify: Restart productreview_app
 
-    - name: Create Python3 virtual env
+   - name: Create Python3 virtual env and install requirements
       shell: |
-         cd /home/ubuntu/flask_app_code
-         python3 -m venv .venv
-         source .venv/bin/activate
-         pip3 install -r requirements.txt
+        cd /home/ubuntu/flask_app_code
+        python3 -m venv .venv
+        . .venv/bin/activate
+        .venv/bin/pip install -r requirements.txt
       args:
         executable: /bin/bash
       notify: Restart productreview_app
@@ -112,6 +106,15 @@
         name: productreview_app
         state: restarted 
         enabled: yes
+
+- hosts: {{ WebServer1 }}
+  become: true
+  tasks:
+   - name: create rds sql database and required table from first webserver
+     tags: sql,db,rds
+     command: |
+         mysql -h{{ rds_endpoint }} -u{{ dbusername }} -p{{ dbpassword }} -e "CREATE DATABASE IF NOT EXISTS product_reviews; USE product_reviews; CREATE TABLE IF NOT EXISTS reviews (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), product_name VARCHAR(255), review TEXT);"
+      
 
 
 
