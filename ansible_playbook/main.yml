@@ -107,7 +107,7 @@
         state: restarted 
         enabled: yes
 
-- hosts: {{ WebServer1 }}
+- hosts: "{{ WebServer1 }}"
   become: true
   tasks:
    - name: create rds sql database and required table from first webserver
