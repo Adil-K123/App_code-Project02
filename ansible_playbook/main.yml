@@ -113,15 +113,7 @@
 
 
 
-# - hosts: "{{ WebServer1 }}"
-#   become: true
-#   tasks:
-#     - name: create rds sql database and required table from first webserver
-#       tags: sql,db,rds
-#       shell: |
-#          mysql -h{{ rds_endpoint }} -u{{ dbusername }} -p{{ dbpassword }} -e "CREATE DATABASE IF NOT EXISTS product_reviews; USE product_reviews; CREATE TABLE IF NOT EXISTS reviews (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), product_name VARCHAR(255), review TEXT);"
-
-      
+ 
 
 
     
