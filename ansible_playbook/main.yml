@@ -27,7 +27,7 @@
 
     - name: create rds sql database and required table from first webserver
       tags: sql,db,rds
-      shell: |
+      command: |
          mysql -h{{ rds_endpoint }} -u{{ dbusername }} -p{{ dbpassword }} -e "CREATE DATABASE IF NOT EXISTS product_reviews; USE product_reviews; CREATE TABLE IF NOT EXISTS reviews (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), product_name VARCHAR(255), review TEXT);"
       when: "'{{ WebServer1 }}' in group_names"
 
@@ -70,6 +70,7 @@
           Restart=always
           [Install]
           WantedBy=multi-user.target
+      notify: Reload systemd manager configuration
 
     - name: Create environment file
       tags: environment,db
@@ -83,7 +84,7 @@
 
     - name: copy my_app code
       synchronize:
-        src: ./flask_app_code
+        src: ../flask_app_code
         dest: /home/ubuntu/flask_app_code
         archive: yes
         delete: yes
@@ -104,6 +105,9 @@
         name: nginx
         state: restarted
         enabled: yes
+
+    - name: Reload systemd manager configuration
+      command: systemctl daemon-reload
 
     - name: Restart productreview_app
       service:
