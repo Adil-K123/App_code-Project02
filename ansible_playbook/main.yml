@@ -1,0 +1,128 @@
+---
+
+- hosts: "{{ WebServer1 }}"
+  become: true
+  tasks:
+    
+- hosts: all
+  become: true
+  pre_tasks:
+    - name: Update and Upgrade
+      tags: always
+      apt:
+        upgrade: dist
+        update_cache: yes
+
+  tasks:
+    - name: Install packages
+      tags: nginx,python3-venv,python3-pip,mysql-client
+      apt:
+        name:
+          - nginx
+          - python3-venv
+          - python3-pip
+          - mysql-client
+        state: latest
+        update_cache: yes
+
+    - name: create rds sql database and required table from first webserver
+      tags: sql,db,rds
+      shell: |
+         mysql -h{{ rds_endpoint }} -u{{ dbusername }} -p{{ dbpassword }} -e "CREATE DATABASE IF NOT EXISTS product_reviews; USE product_reviews; CREATE TABLE IF NOT EXISTS reviews (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), product_name VARCHAR(255), review TEXT);"
+      when: "'{{ WebServer1 }}' in group_names"
+
+    - name: Configure nginx
+      tags: nginx,configure nginx,sites-available
+      copy:
+        dest: /etc/nginx/sites-available/default
+        content: |
+          upstream productreview {
+             server 127.0.0.1:8000;
+          }
+          server {
+               listen 80 default_server;
+               listen [::]:80 default_server;
+               root /var/www/html;
+               server_name _;
+               location / {
+               # First attempt to serve request as file, then
+               # as directory, then fall back to displaying a 404.
+               proxy_pass http://productreview;
+               }
+          }
+        backup: yes
+      notify: Restart and enable nginx
+
+    - name: Create systemd service file for application
+      tags: systemd,service,gunicorn
+      copy:
+        dest: /etc/systemd/system/productreview_app.service
+        content: |
+          [Unit]
+          Description=Gunicorn instance for Product Review App
+          After=network.target
+          [Service]
+          User=ubuntu
+          Group=www-data
+          WorkingDirectory=/home/ubuntu/flask_app_code
+          EnvironmentFile=/etc/productreview_app.env
+          ExecStart=/home/ubuntu/flask_app_code/.venv/bin/gunicorn -b localhost:8000 app:app
+          Restart=always
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Create environment file
+      tags: environment,db
+      copy:
+         dest: /etc/productreview_app.env
+         content: |
+           MYSQL_HOST={{ rds_endpoint }}
+           MYSQL_USER={{ dbusername }}
+           MYSQL_PASSWORD={{ dbpassword }}
+           MYSQL_DATABASE='product_reviews'
+
+    - name: copy my_app code
+      synchronize:
+        src: ./flask_app_code
+        dest: /home/ubuntu/flask_app_code
+        archive: yes
+        delete: yes
+     notify: Restart productreview_app.service
+
+    - name: Create Python3 virtual env
+      shell: |
+        cd /home/ubuntu/flask_app_code
+        python3 -m venv .venv
+        source .venv/bin/activate
+        pip3 install requirements.txt
+      notify: Restart productreview_app.service
+     
+
+  handlers:
+    - name: Restart and enable nginx
+      service:
+        name: nginx
+        state: restarted
+        enabled: yes
+
+    - name: Restart productreview_app.service
+      service:
+        name: productreview_app.service
+        state: restarted 
+        enabled: yes
+
+
+
+# - hosts: "{{ WebServer1 }}"
+#   become: true
+#   tasks:
+#     - name: create rds sql database and required table from first webserver
+#       tags: sql,db,rds
+#       shell: |
+#          mysql -h{{ rds_endpoint }} -u{{ dbusername }} -p{{ dbpassword }} -e "CREATE DATABASE IF NOT EXISTS product_reviews; USE product_reviews; CREATE TABLE IF NOT EXISTS reviews (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), product_name VARCHAR(255), review TEXT);"
+
+      
+
+
+    
+

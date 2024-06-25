@@ -1,6 +1,6 @@
 # Environments
-.venv
+flask_app_code/.venv
 
 # Unit test / coverage reports
-__pycache__
-.pytest_cache
+flask_app_code/__pycache__
+flask_app_code/.pytest_cache
