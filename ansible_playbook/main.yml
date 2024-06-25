@@ -1,9 +1,5 @@
 ---
 
-- hosts: "{{ WebServer1 }}"
-  become: true
-  tasks:
-    
 - hosts: all
   become: true
   pre_tasks:
