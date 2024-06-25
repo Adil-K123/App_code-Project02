@@ -74,8 +74,8 @@
 
     - name: copy my_app code
       synchronize:
-        src: ../flask_app_code
-        dest: /home/ubuntu/flask_app_code
+        src: ../flask_app_code/
+        dest: /home/ubuntu/flask_app_code/
         archive: yes
         delete: yes
       notify: Restart productreview_app
