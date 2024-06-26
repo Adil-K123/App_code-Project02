@@ -24,42 +24,16 @@
     - name: Configure nginx
       tags: nginx,configure nginx,sites-available
       copy:
+        src: ../service_conf/nginx
         dest: /etc/nginx/sites-available/default
-        content: |
-          upstream productreview {
-             server 127.0.0.1:8000;
-          }
-          server {
-               listen 80 default_server;
-               listen [::]:80 default_server;
-               root /var/www/html;
-               server_name _;
-               location / {
-               # First attempt to serve request as file, then
-               # as directory, then fall back to displaying a 404.
-               proxy_pass http://productreview;
-               }
-          }
         backup: yes
       notify: Restart and enable nginx
 
     - name: Create systemd service file for application
       tags: systemd,service,gunicorn
       copy:
+        src: ../service_conf/productreview_app.service
         dest: /etc/systemd/system/productreview_app.service
-        content: |
-          [Unit]
-          Description=Gunicorn instance for Product Review App
-          After=network.target
-          [Service]
-          User=ubuntu
-          Group=www-data
-          WorkingDirectory=/home/ubuntu/flask_app_code
-          EnvironmentFile=/etc/productreview_app.env
-          ExecStart=/home/ubuntu/flask_app_code/venv/bin/gunicorn -b localhost:8000 app:app
-          Restart=always
-          [Install]
-          WantedBy=multi-user.target
       notify: Reload systemd manager configuration
     
     - name: Create environment file
