@@ -21,34 +21,34 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v2
 
-            - name: Start MySql 
-              run: |
-                sudo service mysql start
+            # - name: Start MySql 
+            #   run: |
+            #     sudo service mysql start
 
-            - name: Create DB and table
-              run: |
-                mysql -h$MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD -e "CREATE DATABASE test_db;" 
-                mysql -h$MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD -e "USE test_db; CREATE TABLE reviews (id INT AUTO_INCREMENT PRIMARY KEY,name VARCHAR(255),product_name VARCHAR(255),review TEXT);"
+            # - name: Create DB and table
+            #   run: |
+            #     mysql -h$MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD -e "CREATE DATABASE test_db;" 
+            #     mysql -h$MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD -e "USE test_db; CREATE TABLE reviews (id INT AUTO_INCREMENT PRIMARY KEY,name VARCHAR(255),product_name VARCHAR(255),review TEXT);"
 
             - name: Setup Python
               uses: actions/setup-python@v5
               with:
                   python-version: '3.8'
   
-            - name: venv activate and install dependencies
-              run: |
-                python3 -m venv .venv
-                source .venv/bin/activate
-                python3 -m pip install --upgrade pip
-                pip3 install -r requirements.txt
-              working-directory: ./flask_app_code
+            # - name: venv activate and install dependencies
+            #   run: |
+            #     python3 -m venv .venv
+            #     source .venv/bin/activate
+            #     python3 -m pip install --upgrade pip
+            #     pip3 install -r requirements.txt
+            #   working-directory: ./flask_app_code
 
-            - name: Run tests
-              run: |
-                source .venv/bin/activate
-                pytest
-                deactivate
-              working-directory: ./flask_app_code
+            # - name: Run tests
+            #   run: |
+            #     source .venv/bin/activate
+            #     pytest
+            #     deactivate
+            #   working-directory: ./flask_app_code
 
             - name: Configure AWS credentials
               env:

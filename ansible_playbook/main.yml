@@ -89,7 +89,6 @@
       pip:
         requirements: /home/ubuntu/flask_app_code/requirements.txt
         virtualenv: /home/ubuntu/flask_app_code/.venv
-        executable: pip3
       notify: Restart productreview_app
      
 
