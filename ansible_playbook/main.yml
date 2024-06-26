@@ -86,9 +86,10 @@
         creates: /home/ubuntu/flask_app_code/.venv/bin/python
 
     - name: Install specified python requirements
-      pip:
-        requirements: /home/ubuntu/flask_app_code/requirements.txt
-        virtualenv: /home/ubuntu/flask_app_code/.venv
+      command: /home/ubuntu/flask_app_code/.venv/bin/pip3 install -r /home/ubuntu/flask_app_code/requirements.txt
+      # pip:
+      #   requirements: /home/ubuntu/flask_app_code/requirements.txt
+      #   virtualenv: /home/ubuntu/flask_app_code/.venv
       notify: Restart productreview_app
      
 
