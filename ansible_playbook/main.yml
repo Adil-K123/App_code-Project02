@@ -61,8 +61,7 @@
           [Install]
           WantedBy=multi-user.target
       notify: Reload systemd manager configuration
-      notify: Restart and enable nginx
-
+    
     - name: Create environment file
       tags: environment,db
       copy:
@@ -103,9 +102,11 @@
     - name: Reload systemd manager configuration
       command: systemctl daemon-reload
 
-    - name: Restart productreview_app
+    - name: Restart productreview_app and nginx
       service:
-        name: productreview_app
+        name: 
+           - productreview_app
+           - nginx
         state: restarted 
         enabled: yes
 
