@@ -91,6 +91,7 @@
         virtualenv: /home/ubuntu/flask_app_code/venv
       changed_when: true
       notify: 
+         - Reload systemd manager configuration
          - Restart productreview_app 
          - Restart and enable nginx
      
