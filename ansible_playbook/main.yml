@@ -107,8 +107,7 @@
 
     - name: Restart productreview_app 
       service:
-        name: 
-           - productreview_app
+        name: productreview_app.service
         state: restarted 
         enabled: yes
 
