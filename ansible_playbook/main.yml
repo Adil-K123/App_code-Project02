@@ -78,7 +78,8 @@
         dest: /home/ubuntu/flask_app_code/
         archive: yes
         delete: yes
-      notify: Restart productreview_app
+      changed_when: true
+      notify: Restart productreview_app and nginx
 
     - name: Create Python3 virtual env
       command: python3 -m venv /home/ubuntu/flask_app_code/venv
@@ -89,7 +90,8 @@
       pip:
         requirements: /home/ubuntu/flask_app_code/requirements.txt
         virtualenv: /home/ubuntu/flask_app_code/venv
-      notify: Restart productreview_app
+      changed_when: true
+      notify: Restart productreview_app and nginx
      
 
   handlers:
