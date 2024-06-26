@@ -78,8 +78,7 @@
         dest: /home/ubuntu/flask_app_code/
         archive: yes
         delete: yes
-      changed_when: true
-      notify: Restart productreview_app and nginx
+      notify: Restart productreview_app 
 
     - name: Create Python3 virtual env
       command: python3 -m venv /home/ubuntu/flask_app_code/venv
@@ -91,7 +90,9 @@
         requirements: /home/ubuntu/flask_app_code/requirements.txt
         virtualenv: /home/ubuntu/flask_app_code/venv
       changed_when: true
-      notify: Restart productreview_app and nginx
+      notify: 
+         - Restart productreview_app 
+         - Restart and enable nginx
      
 
   handlers:
@@ -104,11 +105,10 @@
     - name: Reload systemd manager configuration
       command: systemctl daemon-reload
 
-    - name: Restart productreview_app and nginx
+    - name: Restart productreview_app 
       service:
         name: 
            - productreview_app
-           - nginx
         state: restarted 
         enabled: yes
 
