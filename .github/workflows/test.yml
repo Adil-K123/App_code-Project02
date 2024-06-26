@@ -3,7 +3,7 @@ name: "Unit-testing-with-app-and-mysql"
 on:
     push:
         branches:
-            - feature
+            - something
 
 
 jobs:
