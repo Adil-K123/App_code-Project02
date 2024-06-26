@@ -84,6 +84,9 @@
       command: python3 -m venv /home/ubuntu/flask_app_code/.venv
       args:
         creates: /home/ubuntu/flask_app_code/.venv/bin/python
+    
+    - name: Upgrade pip in the virtual environment
+      command: /home/ubuntu/flask_app_code/.venv/bin/python -m pip install --upgrade pip
 
     - name: Install specified python requirements
       command: /home/ubuntu/flask_app_code/.venv/bin/pip3 install -r /home/ubuntu/flask_app_code/requirements.txt
