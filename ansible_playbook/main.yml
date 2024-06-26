@@ -61,6 +61,7 @@
           [Install]
           WantedBy=multi-user.target
       notify: Reload systemd manager configuration
+      notify: Restart and enable nginx
 
     - name: Create environment file
       tags: environment,db
