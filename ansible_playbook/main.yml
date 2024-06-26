@@ -56,7 +56,7 @@
           Group=www-data
           WorkingDirectory=/home/ubuntu/flask_app_code
           EnvironmentFile=/etc/productreview_app.env
-          ExecStart=/home/ubuntu/flask_app_code/.venv/bin/gunicorn -b localhost:8000 app:app
+          ExecStart=/home/ubuntu/flask_app_code/venv/bin/gunicorn -b localhost:8000 app:app
           Restart=always
           [Install]
           WantedBy=multi-user.target
@@ -81,18 +81,14 @@
       notify: Restart productreview_app
 
     - name: Create Python3 virtual env
-      command: python3 -m venv /home/ubuntu/flask_app_code/.venv
+      command: python3 -m venv /home/ubuntu/flask_app_code/venv
       args:
-        creates: /home/ubuntu/flask_app_code/.venv/bin/python
+        creates: /home/ubuntu/flask_app_code/venv/bin/python3
     
-    - name: Upgrade pip in the virtual environment
-      command: /home/ubuntu/flask_app_code/.venv/bin/python -m pip install --upgrade pip
-
     - name: Install specified python requirements
-      command: /home/ubuntu/flask_app_code/.venv/bin/pip3 install -r /home/ubuntu/flask_app_code/requirements.txt
-      # pip:
-      #   requirements: /home/ubuntu/flask_app_code/requirements.txt
-      #   virtualenv: /home/ubuntu/flask_app_code/.venv
+      pip:
+        requirements: /home/ubuntu/flask_app_code/requirements.txt
+        virtualenv: /home/ubuntu/flask_app_code/venv
       notify: Restart productreview_app
      
 
