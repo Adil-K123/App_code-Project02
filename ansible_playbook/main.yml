@@ -13,10 +13,10 @@
     - name: Install mysql-client to configure db
       tags: mysql-client
       apt:
-      name:
-        - mysql-client
-      state: latest
-      update_cache: yes
+        name:
+          - mysql-client
+        state: latest
+        update_cache: yes
 
     - name: create rds sql database and required table from first webserver
       tags: sql,db,rds
