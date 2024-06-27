@@ -12,11 +12,12 @@ jobs:
         runs-on: ubuntu-latest
 
         env:
-            TEST_MYSQL_HOST: 127.0.0.1
-            TEST_MYSQL_USER: root
-            TEST_MYSQL_PASSWORD: root
-            TEST_MYSQL_DATABASE: test_db
-
+            #These credentials are for test in runner
+            MYSQL_HOST: 127.0.0.1
+            MYSQL_USER: root
+            MYSQL_PASSWORD: root
+            MYSQL_DATABASE: test_db
+            ########################################
             DB_INSTANCE_IDENTIFIER: devproductreviewdb
             WEB_SERVER_GROUP: tag_Name_devWebServer*
             WEBSERVER1: tag_Name_devWebServer1
@@ -31,8 +32,8 @@ jobs:
 
             - name: Create DB and table
               run: |
-                mysql -h$TEST_MYSQL_HOST -u$TEST_MYSQL_USER -p$TEST_MYSQL_PASSWORD -e "CREATE DATABASE test_db;" 
-                mysql -h$TEST_MYSQL_HOST -u$TEST_MYSQL_USER -p$TEST_MYSQL_PASSWORD -e "USE test_db; CREATE TABLE reviews (id INT AUTO_INCREMENT PRIMARY KEY,name VARCHAR(255),product_name VARCHAR(255),review TEXT);"
+                mysql -e "CREATE DATABASE test_db;" 
+                mysql -e "USE test_db; CREATE TABLE reviews (id INT AUTO_INCREMENT PRIMARY KEY,name VARCHAR(255),product_name VARCHAR(255),review TEXT);"
 
             - name: Setup Python
               uses: actions/setup-python@v5
