@@ -17,7 +17,7 @@ jobs:
             MYSQL_USER: root
             MYSQL_PASSWORD: root
             MYSQL_DATABASE: test_db
-            ########################################
+            #############################
             DB_INSTANCE_IDENTIFIER: devproductreviewdb
             WEB_SERVER_GROUP: tag_Name_devWebServer*
             WEBSERVER1: tag_Name_devWebServer1
@@ -32,8 +32,8 @@ jobs:
 
             - name: Create DB and table
               run: |
-                mysql -e "CREATE DATABASE test_db;" 
-                mysql -e "USE test_db; CREATE TABLE reviews (id INT AUTO_INCREMENT PRIMARY KEY,name VARCHAR(255),product_name VARCHAR(255),review TEXT);"
+                  mysql -h$MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD -e "CREATE DATABASE $MYSQL_DATABASE;" 
+                  mysql -h$MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD -e "USE $MYSQL_DATABASE; CREATE TABLE reviews (id INT AUTO_INCREMENT PRIMARY KEY,name VARCHAR(255),product_name VARCHAR(255),review TEXT);"
 
             - name: Setup Python
               uses: actions/setup-python@v5
