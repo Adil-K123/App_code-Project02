@@ -3,7 +3,7 @@ name: "Unit test and deploy to dev server"
 on:
     push:
         branches:
-            - dev
+            pass
 
 jobs:
     Tests:

@@ -12,10 +12,14 @@ jobs:
         runs-on: ubuntu-latest
 
         env:
-            MYSQL_HOST: 127.0.0.1
-            MYSQL_USER: root
-            MYSQL_PASSWORD: root
-            MYSQL_DATABASE: test_db
+            TEST_MYSQL_HOST: 127.0.0.1
+            TEST_MYSQL_USER: root
+            TEST_MYSQL_PASSWORD: root
+            TEST_MYSQL_DATABASE: test_db
+
+            DB_INSTANCE_IDENTIFIER: devproductreviewdb
+            WEB_SERVER_GROUP: tag_Name_devWebServer*
+            WEBSERVER1: tag_Name_devWebServer1
 
         steps:
             - name: Checkout code
@@ -27,8 +31,8 @@ jobs:
 
             - name: Create DB and table
               run: |
-                mysql -h$MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD -e "CREATE DATABASE test_db;" 
-                mysql -h$MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD -e "USE test_db; CREATE TABLE reviews (id INT AUTO_INCREMENT PRIMARY KEY,name VARCHAR(255),product_name VARCHAR(255),review TEXT);"
+                mysql -h$TEST_MYSQL_HOST -u$TEST_MYSQL_USER -p$TEST_MYSQL_PASSWORD -e "CREATE DATABASE test_db;" 
+                mysql -h$TEST_MYSQL_HOST -u$TEST_MYSQL_USER -p$TEST_MYSQL_PASSWORD -e "USE test_db; CREATE TABLE reviews (id INT AUTO_INCREMENT PRIMARY KEY,name VARCHAR(255),product_name VARCHAR(255),review TEXT);"
 
             - name: Setup Python
               uses: actions/setup-python@v5
@@ -67,12 +71,12 @@ jobs:
 
             - name: Fetch RDS endpoint from AWS
               run: |
-                  rds_endpoint=$(aws rds --region us-east-1 describe-db-instances --db-instance-identifier devproductreviewdb --query 'DBInstances[*].Endpoint.Address' --output text) 
+                  rds_endpoint=$(aws rds --region us-east-1 describe-db-instances --db-instance-identifier $DB_INSTANCE_IDENTIFIER --query 'DBInstances[*].Endpoint.Address' --output text) 
                   echo "RDS_ENDPOINT=${rds_endpoint}" >> $GITHUB_ENV
 
             - name: Configure nginx to webservers and RDS mysql DB with playbook
               env:
                   RDS_ENDPOINT: ${{ env.RDS_ENDPOINT }}
               run: |
-                  ansible-playbook -i ./inventory/hosts.aws_ec2.yaml -u ${{ secrets.webserver_user }} --private-key=/home/runner/.ssh/flask_ec2.pem main.yml --limit tag_Name_devWebServer* --extra-vars "WebServer1=tag_Name_devWebServer1 rds_endpoint=$RDS_ENDPOINT dbusername=${{ secrets.DBUSERNAME }} dbpassword=${{ secrets.DBPASSWORD }}"
+                  ansible-playbook -i ./inventory/hosts.aws_ec2.yaml -u ${{ secrets.webserver_user }} --private-key=/home/runner/.ssh/flask_ec2.pem main.yml --limit $WEB_SERVER_GROUP --extra-vars "WebServer1=$WEBSERVER1 rds_endpoint=$RDS_ENDPOINT dbusername=${{ secrets.DBUSERNAME }} dbpassword=${{ secrets.DBPASSWORD }}"
               working-directory: ./ansible_playbook
