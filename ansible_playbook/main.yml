@@ -66,7 +66,7 @@
 
     - name: Pull Docker images and docker compose up
       tags: docker,pull,images
-      run:|
+      command: |
         docker pull {{ aws_account_id }}.dkr.ecr.us-east-1.amazonaws.com/product_review:{{ product_review_version }}
         docker pull {{ aws_account_id }}.dkr.ecr.us-east-1.amazonaws.com/custom_nginx:{{ custom_nginx_version }}
         docker compose up -d

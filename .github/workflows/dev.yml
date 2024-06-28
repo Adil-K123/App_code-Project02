@@ -103,7 +103,7 @@ jobs:
                   rds_endpoint=$(aws rds --region us-east-1 describe-db-instances --db-instance-identifier $DB_INSTANCE_IDENTIFIER --query 'DBInstances[*].Endpoint.Address' --output text) 
                   echo "RDS_ENDPOINT=${rds_endpoint}" >> $GITHUB_ENV
 
-            - name: Configure nginx to webservers and RDS mysql DB with playbook
+            - name: Configure mysql rds db and docker commands in webservers
               env:
                   RDS_ENDPOINT: ${{ env.RDS_ENDPOINT }}
               run: |
