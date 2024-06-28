@@ -18,6 +18,10 @@ jobs:
             MYSQL_PASSWORD: root
             MYSQL_DATABASE: test_db
             #############################
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+            AWS_DEFAULT_REGION: us-east-1
             PRODUCT_REVIEW_VERSION: 1.0
             CUSTOM_NGINX_VERSION: 1.0
             DB_INSTANCE_IDENTIFIER: devproductreviewdb
@@ -71,11 +75,6 @@ jobs:
                 sudo apt-get update
 
             - name: Configure AWS credentials
-              env:
-                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                  AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-                  AWS_DEFAULT_REGION: us-east-1
               run: |
                 aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID && aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY && aws configure set aws_default_region $AWS_DEFAULT_REGION
                 aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
