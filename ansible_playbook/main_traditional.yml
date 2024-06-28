@@ -1,0 +1,120 @@
+---
+
+- hosts: "{{ WebServer1 }}"
+  become: true
+  pre_tasks:
+    - name: Update and Upgrade
+      tags: always
+      apt:
+        upgrade: dist
+        update_cache: yes
+
+  tasks:
+    - name: Install mysql-client to configure db
+      tags: mysql-client
+      apt:
+        name:
+          - mysql-client
+        state: latest
+        update_cache: yes
+
+    - name: create rds sql database and required table from first webserver
+      tags: sql,db,rds
+      command: |
+         mysql -h{{ rds_endpoint }} -u{{ dbusername }} -p{{ dbpassword }} -e "CREATE DATABASE IF NOT EXISTS product_reviews; USE product_reviews; CREATE TABLE IF NOT EXISTS reviews (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), product_name VARCHAR(255), review TEXT);"
+
+
+- hosts: all
+  become: true
+  pre_tasks:
+    - name: Update and Upgrade
+      tags: always
+      apt:
+        upgrade: dist
+        update_cache: yes
+
+  tasks:
+    - name: Install packages
+      tags: nginx,python3-venv,python3-pip,mysql-client
+      apt:
+        name:
+          - nginx
+          - python3-venv
+          - python3-pip
+          - mysql-client
+        state: latest
+        update_cache: yes
+
+    - name: Configure nginx
+      tags: nginx,configure nginx,sites-available
+      copy:
+        src: ../service_conf/nginx
+        dest: /etc/nginx/sites-available/default
+        backup: yes
+      notify: Restart and enable nginx
+
+    - name: Create systemd service file for application
+      tags: systemd,service,gunicorn
+      copy:
+        src: ../service_conf/productreview_app.service
+        dest: /etc/systemd/system/productreview_app.service
+      notify: Reload systemd manager configuration
+    
+    - name: Create environment file
+      tags: environment,db
+      copy:
+         dest: /etc/productreview_app.env
+         content: |
+           MYSQL_HOST={{ rds_endpoint }}
+           MYSQL_USER={{ dbusername }}
+           MYSQL_PASSWORD={{ dbpassword }}
+           MYSQL_DATABASE='product_reviews'
+
+    - name: copy my_app code
+      synchronize:
+        src: ../flask_app_code/
+        dest: /home/ubuntu/flask_app_code/
+        archive: yes
+        delete: yes
+      notify: Restart productreview_app 
+
+    - name: Create Python3 virtual env
+      command: python3 -m venv /home/ubuntu/flask_app_code/venv
+      args:
+        creates: /home/ubuntu/flask_app_code/venv/bin/python3
+    
+    - name: Install specified python requirements
+      pip:
+        requirements: /home/ubuntu/flask_app_code/requirements.txt
+        virtualenv: /home/ubuntu/flask_app_code/venv
+      changed_when: true
+      notify: 
+         - Reload systemd manager configuration
+         - Restart productreview_app 
+         - Restart and enable nginx
+     
+
+  handlers:
+    - name: Restart and enable nginx
+      service:
+        name: nginx
+        state: restarted
+        enabled: yes
+
+    - name: Reload systemd manager configuration
+      command: systemctl daemon-reload
+
+    - name: Restart productreview_app 
+      service:
+        name: productreview_app.service
+        state: restarted 
+        enabled: yes
+
+
+
+
+ 
+
+
+    
+

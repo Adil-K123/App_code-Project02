@@ -18,6 +18,8 @@ jobs:
             MYSQL_PASSWORD: root
             MYSQL_DATABASE: test_db
             #############################
+            PRODUCT_REVIEW_VERSION: 1.0
+            CUSTOM_NGINX_VERSION: 1.0
             DB_INSTANCE_IDENTIFIER: devproductreviewdb
             WEB_SERVER_GROUP: tag_Name_devWebServer*
             WEBSERVER1: tag_Name_devWebServer1
@@ -54,13 +56,34 @@ jobs:
                 pytest
                 deactivate
               working-directory: ./flask_app_code
+            
+            - name: Install Docker
+              run: |
+                sudo apt-get update
+                sudo apt-get install -y docker.io
+                sudo systemctl start docker
+                sudo systemctl enable docker
 
             - name: Configure AWS credentials
               env:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
                   AWS_DEFAULT_REGION: us-east-1
-              run: aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID && aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY && aws configure set aws_default_region $AWS_DEFAULT_REGION
+              run: |
+                aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID && aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY && aws configure set aws_default_region $AWS_DEFAULT_REGION
+                aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+
+
+            - name: Build and push Docker images for Productreview_app and nginx to ECR
+              run: |
+                cd ${{ github.workspace }}/flask_app_code
+                docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/product_review:$PRODUCT_REVIEW_VERSION .
+                docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/product_review:$PRODUCT_REVIEW_VERSION
+                cd ${{ github.workspace }}/nginx
+                docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/custom_nginx:$CUSTOM_NGINX_VERSION .
+                docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/custom_nginx:$CUSTOM_NGINX_VERSION
+
 
             - name: Install Ansible,boto3 and store ssh key in runner
               run: |
@@ -79,5 +102,5 @@ jobs:
               env:
                   RDS_ENDPOINT: ${{ env.RDS_ENDPOINT }}
               run: |
-                  ansible-playbook -i ./inventory/hosts.aws_ec2.yaml -u ${{ secrets.webserver_user }} --private-key=/home/runner/.ssh/flask_ec2.pem main.yml --limit $WEB_SERVER_GROUP --extra-vars "WebServer1=$WEBSERVER1 rds_endpoint=$RDS_ENDPOINT dbusername=${{ secrets.DBUSERNAME }} dbpassword=${{ secrets.DBPASSWORD }}"
+                  ansible-playbook -i ./inventory/hosts.aws_ec2.yaml -u ${{ secrets.webserver_user }} --private-key=/home/runner/.ssh/flask_ec2.pem main.yml --limit $WEB_SERVER_GROUP --extra-vars "WebServer1=$WEBSERVER1 rds_endpoint=$RDS_ENDPOINT dbusername=${{ secrets.DBUSERNAME }} dbpassword=${{ secrets.DBPASSWORD }} aws_account_id=$AWS_ACCOUNT ID product_review_version=$PRODUCT_REVIEW_VERSION custom_nginx_version=$CUSTOM_NGINX_VERSION"
               working-directory: ./ansible_playbook

@@ -1,0 +1,18 @@
+version: '2.28.1'
+services:
+  productreview_app:
+    image: product_review:1.0
+    container_name: productreview_app
+    ports:
+      - 8000:8000
+    env_file:
+      - /etc/productreview_app.env
+  my_nginx:
+    image: custom_nginx:1.0
+    container_name: custom_nginx
+    ports:
+      - 80:80
+    depends_on:
+      - productreview_app
+    
+      

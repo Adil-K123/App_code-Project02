@@ -1,0 +1,11 @@
+# Environments
+venv
+productreview_app.env
+
+# Unit test / coverage reports
+__pycache__
+.pytest_cache
+
+# Docker files
+Dockerfile
+.dockerignore

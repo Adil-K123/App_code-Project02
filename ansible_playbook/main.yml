@@ -34,32 +34,6 @@
         update_cache: yes
 
   tasks:
-    - name: Install packages
-      tags: nginx,python3-venv,python3-pip,mysql-client
-      apt:
-        name:
-          - nginx
-          - python3-venv
-          - python3-pip
-          - mysql-client
-        state: latest
-        update_cache: yes
-
-    - name: Configure nginx
-      tags: nginx,configure nginx,sites-available
-      copy:
-        src: ../service_conf/nginx
-        dest: /etc/nginx/sites-available/default
-        backup: yes
-      notify: Restart and enable nginx
-
-    - name: Create systemd service file for application
-      tags: systemd,service,gunicorn
-      copy:
-        src: ../service_conf/productreview_app.service
-        dest: /etc/systemd/system/productreview_app.service
-      notify: Reload systemd manager configuration
-    
     - name: Create environment file
       tags: environment,db
       copy:
@@ -69,52 +43,34 @@
            MYSQL_USER={{ dbusername }}
            MYSQL_PASSWORD={{ dbpassword }}
            MYSQL_DATABASE='product_reviews'
-
-    - name: copy my_app code
-      synchronize:
-        src: ../flask_app_code/
-        dest: /home/ubuntu/flask_app_code/
-        archive: yes
-        delete: yes
-      notify: Restart productreview_app 
-
-    - name: Create Python3 virtual env
-      command: python3 -m venv /home/ubuntu/flask_app_code/venv
-      args:
-        creates: /home/ubuntu/flask_app_code/venv/bin/python3
     
-    - name: Install specified python requirements
-      pip:
-        requirements: /home/ubuntu/flask_app_code/requirements.txt
-        virtualenv: /home/ubuntu/flask_app_code/venv
-      changed_when: true
-      notify: 
-         - Reload systemd manager configuration
-         - Restart productreview_app 
-         - Restart and enable nginx
-     
+    - name: Install Docker
+      tags: docker
+      command: |
+          sudo apt-get update
+          sudo apt-get install ca-certificates curl
+          sudo install -m 0755 -d /etc/apt/keyrings
+          sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+          sudo chmod a+r /etc/apt/keyrings/docker.asc
+          echo \
+            "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+            $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+            sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+          sudo apt-get update
 
-  handlers:
-    - name: Restart and enable nginx
-      service:
-        name: nginx
-        state: restarted
-        enabled: yes
+    - name: Copy Docker compose file
+      tags: docker,compose
+      copy:
+        src: ../docker-compose.yaml 
+        dst: /home/ubuntu/docker-compose.yaml
 
-    - name: Reload systemd manager configuration
-      command: systemctl daemon-reload
+    - name: Pull Docker images and docker compose up
+      tags: docker,pull,images
+      run:|
+        docker pull {{ aws_account_id }}.dkr.ecr.us-east-1.amazonaws.com/product_review:{{ product_review_version }}
+        docker pull {{ aws_account_id }}.dkr.ecr.us-east-1.amazonaws.com/custom_nginx:{{ custom_nginx_version }}
+        docker compose up -d
 
-    - name: Restart productreview_app 
-      service:
-        name: productreview_app.service
-        state: restarted 
-        enabled: yes
-
-
-
-
- 
 
 
     
-
