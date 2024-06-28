@@ -61,8 +61,8 @@
     - name: Copy Docker compose file
       tags: docker,compose
       copy:
-        src: ../docker-compose.yaml 
-        dest: /home/ubuntu/docker-compose.yaml
+        src: ../docker-compose.yml 
+        dest: /home/ubuntu/docker-compose.yml
 
     - name: Pull Docker images and docker compose up
       tags: docker,pull,images
