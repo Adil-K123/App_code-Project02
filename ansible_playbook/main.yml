@@ -62,7 +62,7 @@
       tags: docker,compose
       copy:
         src: ../docker-compose.yaml 
-        dst: /home/ubuntu/docker-compose.yaml
+        dest: /home/ubuntu/docker-compose.yaml
 
     - name: Pull Docker images and docker compose up
       tags: docker,pull,images
