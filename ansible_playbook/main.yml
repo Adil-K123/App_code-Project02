@@ -74,13 +74,14 @@
         src: ../docker-compose.yml 
         dest: /home/ubuntu/docker-compose.yml
 
-    - name: Install aws cli 
+    - name: Set up files for aws cli install
       shell: |
          sudo curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
          sudo unzip awscliv2.zip
-         sudo ./aws/install
-      args:
-        executable: /bin/bash
+    
+    - name: Install aws cli
+      command: sudo ./aws/install
+      
 
     - name: Pull Docker images and docker compose up
       tags: docker,pull,images
