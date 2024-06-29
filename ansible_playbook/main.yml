@@ -76,9 +76,7 @@
       tags: docker,pull,images
       shell: |
         aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin {{ aws_account_id }}.dkr.ecr.us-east-1.amazonaws.com
-        docker pull {{ aws_account_id }}.dkr.ecr.us-east-1.amazonaws.com/product_review:{{ product_review_version }}
-        docker pull {{ aws_account_id }}.dkr.ecr.us-east-1.amazonaws.com/custom_nginx:{{ custom_nginx_version }}
-        docker compose up -d
+        sudo docker compose up -d
 
 
 
