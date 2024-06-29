@@ -83,7 +83,7 @@
         dest: /home/ubuntu/docker-compose.yml
 
     - name: Install aws cli
-      command: sudo python -m pip install awscli
+      command: sudo python3 -m pip install awscli
       
 
     - name: Pull Docker images and docker compose up
