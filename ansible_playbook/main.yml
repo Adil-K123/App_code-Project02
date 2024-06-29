@@ -89,7 +89,11 @@
 
     - name: Install aws cli
       shell: |
-        sudo /tmp/aws/install
+        if [ -d "/usr/local/aws-cli/v2/current" ]; then
+          /tmp/aws/install --update
+        else
+          /tmp/aws/install
+        fi
       args:
         executable: /bin/bash
 
