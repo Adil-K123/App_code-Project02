@@ -67,8 +67,8 @@
 
     - name: Install aws cli 
       shell: |
-         curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-         unzip awscliv2.zip
+         sudo curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+         sudo unzip awscliv2.zip
          sudo -y ./aws/install
 
     - name: Pull Docker images and docker compose up
