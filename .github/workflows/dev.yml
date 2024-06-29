@@ -22,8 +22,8 @@ jobs:
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
             AWS_DEFAULT_REGION: us-east-1
-            PRODUCT_REVIEW_VERSION: 1.0
-            CUSTOM_NGINX_VERSION: 1.0
+            PRODUCT_REVIEW_VERSION: "1.0"
+            CUSTOM_NGINX_VERSION: "1.0"
             DB_INSTANCE_IDENTIFIER: devproductreviewdb
             WEB_SERVER_GROUP: tag_Name_devWebServer*
             WEBSERVER1: tag_Name_devWebServer1
