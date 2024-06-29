@@ -1,7 +1,7 @@
 version: '2.28.1'
 services:
   productreview_app:
-    image: 767398069045.dkr.ecr.us-east-1.amazonaws.com/product_review:1.0
+    image: 767398069045.dkr.ecr.us-east-1.amazonaws.com/product_review:2.0
     container_name: productreview_app
     ports:
       - 8000:8000
