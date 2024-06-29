@@ -94,5 +94,5 @@ jobs:
               env:
                   RDS_ENDPOINT: ${{ env.RDS_ENDPOINT }}
               run: |
-                  ansible-playbook -i ./inventory/hosts.aws_ec2.yaml -u ${{ secrets.webserver_user }} --private-key=/home/runner/.ssh/flask_ec2.pem main.yml --limit $WEB_SERVER_GROUP --extra-vars "WebServer1=$WEBSERVER1 rds_endpoint=$RDS_ENDPOINT dbusername=${{ secrets.DBUSERNAME }} dbpassword=${{ secrets.DBPASSWORD }} aws_account_id=$AWS_ACCOUNT ID product_review_version=$PRODUCT_REVIEW_VERSION custom_nginx_version=$CUSTOM_NGINX_VERSION"
+                  ansible-playbook -i ./inventory/hosts.aws_ec2.yaml -u ${{ secrets.webserver_user }} --private-key=/home/runner/.ssh/flask_ec2.pem main.yml --limit $WEB_SERVER_GROUP --extra-vars "WebServer1=$WEBSERVER1 rds_endpoint=$RDS_ENDPOINT dbusername=${{ secrets.DBUSERNAME }} dbpassword=${{ secrets.DBPASSWORD }} aws_account_id=$AWS_ACCOUNT_ID product_review_version=$PRODUCT_REVIEW_VERSION custom_nginx_version=$CUSTOM_NGINX_VERSION"
               working-directory: ./ansible_playbook
