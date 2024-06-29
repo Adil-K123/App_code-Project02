@@ -40,7 +40,15 @@
         name:
            - zip
            - unzip
-        state: latest
+        state: absent
+        update_cache: yes
+    
+    - name: install pip
+      tags: zip,unzip
+      apt:
+        name:
+           - python3-pip
+        state: present
         update_cache: yes
 
     - name: Create environment file
@@ -74,13 +82,8 @@
         src: ../docker-compose.yml 
         dest: /home/ubuntu/docker-compose.yml
 
-    - name: Set up files for aws cli install
-      shell: |
-         sudo curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-         sudo unzip awscliv2.zip
-    
     - name: Install aws cli
-      command: sudo ./aws/install
+      command: sudo python -m pip install awscli
       
 
     - name: Pull Docker images and docker compose up
