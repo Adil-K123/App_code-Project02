@@ -83,7 +83,9 @@
 
     - name: Unzip aws cli
       shell: |
-        unzip /tmp/awscliv2.zip -d /tmp/
+          if [ ! -d "/tmp/aws" ]; then
+            unzip /tmp/awscliv2.zip -d /tmp/
+          fi
       args:
         executable: /bin/bash
 
