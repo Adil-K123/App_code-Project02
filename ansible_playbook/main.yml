@@ -34,6 +34,14 @@
         update_cache: yes
 
   tasks:
+    - name: Install pip
+      tags: pip
+      apt:
+        name:
+          - python3-pip
+        state: latest
+        update_cache: yes
+
     - name: Create environment file
       tags: environment,db
       copy:
@@ -66,13 +74,9 @@
         dest: /home/ubuntu/docker-compose.yml
 
     - name: Install aws cli
-      command:
-         curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-         sudo apt-get -y install zip unzip
-         sudo unzip awscliv2.zip
-         sudo ./aws/install
+      pip:
+        name: awscli
   
-
     - name: Pull Docker images and docker compose up
       tags: docker,pull,images
       shell: |
