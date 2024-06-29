@@ -40,7 +40,9 @@
         name:
            - zip
            - unzip
-        state: present
+           - curl
+           - ca-certificates 
+        state: latest
         update_cache: yes
     
     - name: Create environment file
@@ -57,7 +59,6 @@
       tags: docker
       shell: |
           sudo apt-get -y update
-          sudo apt-get -y install ca-certificates curl
           sudo install -m 0755 -d /etc/apt/keyrings
           sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
           sudo chmod a+r /etc/apt/keyrings/docker.asc
@@ -75,16 +76,22 @@
         dest: /home/ubuntu/docker-compose.yml
 
     - name: Download aws cli zip file
-      tags: awscli,zip
-      get_url:
-         url: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
-         dest: awscliv2.zip
-         validate_certs: no
+      shell: |
+        curl -o /tmp/awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
+      args:
+        executable: /bin/bash
 
-    - name: Install aws cli 
-      command: |
-         sudo unzip awscliv2.zip
-         sudo ./aws/install 
+    - name: Unzip aws cli
+      shell: |
+        unzip /tmp/awscliv2.zip -d /tmp/
+      args:
+        executable: /bin/bash
+
+    - name: Install aws cli
+      shell: |
+        sudo /tmp/aws/install
+      args:
+        executable: /bin/bash
 
     - name: Pull Docker images and docker compose up
       tags: docker,pull,images
