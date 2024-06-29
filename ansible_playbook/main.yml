@@ -34,11 +34,11 @@
         update_cache: yes
 
   tasks:
-    - name: Install pip
-      tags: pip
+    - name: Install aws-cli
+      tags: awscli
       apt:
         name:
-          - python3-pip
+          - awscli
         state: latest
         update_cache: yes
 
@@ -73,10 +73,6 @@
         src: ../docker-compose.yml 
         dest: /home/ubuntu/docker-compose.yml
 
-    - name: Install aws cli
-      pip:
-        name: awscli
-  
     - name: Pull Docker images and docker compose up
       tags: docker,pull,images
       shell: |
