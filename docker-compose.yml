@@ -19,7 +19,7 @@ services:
     ports:
       - "9113:9113"
     command: [
-      "-nginx.scrape-uri=http://custom_nginx/nginx_status"
+      "-nginx.scrape-uri=http://127.0.0.1:80/metrics"
     ]
     depends_on:
       - my_nginx

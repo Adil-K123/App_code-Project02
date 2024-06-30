@@ -73,11 +73,11 @@ jobs:
             #     docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/product_review:$PRODUCT_REVIEW_VERSION .
             #     docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/product_review:$PRODUCT_REVIEW_VERSION
 
-            - name: Build and push Docker images for nginx to ECR
-              run: |
-                cd ${{ github.workspace }}/nginx
-                docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/custom_nginx:$CUSTOM_NGINX_VERSION .
-                docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/custom_nginx:$CUSTOM_NGINX_VERSION
+            # - name: Build and push Docker images for nginx to ECR
+            #   run: |
+            #     cd ${{ github.workspace }}/nginx
+            #     docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/custom_nginx:$CUSTOM_NGINX_VERSION .
+            #     docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/custom_nginx:$CUSTOM_NGINX_VERSION
 
             - name: Install Ansible,boto3 and store ssh key in runner
               run: |
