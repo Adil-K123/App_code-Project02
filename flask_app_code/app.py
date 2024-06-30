@@ -1,8 +1,10 @@
 from flask import Flask, request, render_template, redirect, url_for
+from prometheus_flask_exporter import PrometheusMetrics
 import os
 import mysql.connector
 
 app = Flask(__name__)
+metrics = PrometheusMetrics(app)
 
 # Connect to MySQL
 db = mysql.connector.connect(
