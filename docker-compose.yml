@@ -8,11 +8,20 @@ services:
     env_file:
       - /etc/productreview_app.env
   my_nginx:
-    image: 767398069045.dkr.ecr.us-east-1.amazonaws.com/custom_nginx:2.0
+    image: 767398069045.dkr.ecr.us-east-1.amazonaws.com/custom_nginx:4.0
     container_name: custom_nginx
     ports:
       - 80:80
     depends_on:
       - productreview_app
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:latest
+    ports:
+      - "9113:9113"
+    command: [
+      "-nginx.scrape-uri=http://custom_nginx/nginx_status"
+    ]
+    depends_on:
+      - my_nginx
     
       
