@@ -71,7 +71,7 @@
 
     - name: ensures nginx conf dir exists
       file: 
-         path: nginx/default.conf
+         path: /home/ubuntu/nginx
          state: directory
 
     - name: Copy file
