@@ -20,11 +20,8 @@ services:
   nginx-prometheus-exporter:
     image: nginx/nginx-prometheus-exporter:latest
     container_name: nginx-prometheus-exporter
-    ports:
-      - "9113:9113"
     command:
-      - -nginx.scrape-uri http://127.0.0.1:8080/stub_status
+      --nginx.scrape-uri=http://127.0.0.1:8080/stub_status
+    network_mode: host
     depends_on:
       - nginx
-    
-      
