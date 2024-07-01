@@ -23,7 +23,6 @@ jobs:
             AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
             AWS_DEFAULT_REGION: us-east-1
             PRODUCT_REVIEW_VERSION: "1.0"
-            CUSTOM_NGINX_VERSION: "5.0"
             DB_INSTANCE_IDENTIFIER: devproductreviewdb
             WEB_SERVER_GROUP: tag_Name_devWebServer*
             WEBSERVER1: tag_Name_devWebServer1
@@ -67,17 +66,11 @@ jobs:
                 aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
 
 
-            # - name: Build and push Docker images for Productreview_app to ECR
-            #   run: |
-            #     cd ${{ github.workspace }}/flask_app_code
-            #     docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/product_review:$PRODUCT_REVIEW_VERSION .
-            #     docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/product_review:$PRODUCT_REVIEW_VERSION
-
-            # - name: Build and push Docker images for nginx to ECR
-            #   run: |
-            #     cd ${{ github.workspace }}/nginx
-            #     docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/custom_nginx:$CUSTOM_NGINX_VERSION .
-            #     docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/custom_nginx:$CUSTOM_NGINX_VERSION
+            - name: Build and push Docker images for Productreview_app to ECR
+              run: |
+                cd ${{ github.workspace }}/flask_app_code
+                docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/product_review:$PRODUCT_REVIEW_VERSION .
+                docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/product_review:$PRODUCT_REVIEW_VERSION
 
             - name: Install Ansible,boto3 and store ssh key in runner
               run: |
@@ -96,5 +89,5 @@ jobs:
               env:
                   RDS_ENDPOINT: ${{ env.RDS_ENDPOINT }}
               run: |
-                  ansible-playbook -i ./inventory/hosts.aws_ec2.yaml -u ${{ secrets.webserver_user }} --private-key=/home/runner/.ssh/flask_ec2.pem main.yml --limit $WEB_SERVER_GROUP --extra-vars "WebServer1=$WEBSERVER1 rds_endpoint=$RDS_ENDPOINT dbusername=${{ secrets.DBUSERNAME }} dbpassword=${{ secrets.DBPASSWORD }} aws_account_id=$AWS_ACCOUNT_ID product_review_version=$PRODUCT_REVIEW_VERSION custom_nginx_version=$CUSTOM_NGINX_VERSION"
+                  ansible-playbook -i ./inventory/hosts.aws_ec2.yaml -u ${{ secrets.webserver_user }} --private-key=/home/runner/.ssh/flask_ec2.pem main.yml --limit $WEB_SERVER_GROUP --extra-vars "WebServer1=$WEBSERVER1 rds_endpoint=$RDS_ENDPOINT dbusername=${{ secrets.DBUSERNAME }} dbpassword=${{ secrets.DBPASSWORD }} aws_account_id=$AWS_ACCOUNT_ID product_review_version=$PRODUCT_REVIEW_VERSION"
               working-directory: ./ansible_playbook
