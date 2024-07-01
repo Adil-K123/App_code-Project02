@@ -23,8 +23,8 @@ services:
     container_name: nginx-prometheus-exporter
     ports:
       - "9113:9113"
-    environment:
-      - NGINX_SCRAPE_URI=http://nginx:8080/metrics 
+    command:
+      - -nginx.scrape-uri http://127.0.0.1:8080/stub_status
     depends_on:
       - nginx
     
