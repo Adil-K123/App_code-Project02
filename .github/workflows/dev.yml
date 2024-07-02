@@ -25,6 +25,7 @@ jobs:
             PRODUCT_REVIEW_VERSION: "1.0"
             DB_INSTANCE_IDENTIFIER: devproductreviewdb
             WEB_SERVER_GROUP: tag_Name_devWebServer*
+            MONITORING_SERVER_GROUP: tag_Name_MonitoringServer*
             WEBSERVER1: tag_Name_devWebServer1
 
         steps:
@@ -90,4 +91,5 @@ jobs:
                   RDS_ENDPOINT: ${{ env.RDS_ENDPOINT }}
               run: |
                   ansible-playbook -i ./inventory/hosts.aws_ec2.yaml -u ${{ secrets.webserver_user }} --private-key=/home/runner/.ssh/flask_ec2.pem main.yml --limit $WEB_SERVER_GROUP --extra-vars "WebServer1=$WEBSERVER1 rds_endpoint=$RDS_ENDPOINT dbusername=${{ secrets.DBUSERNAME }} dbpassword=${{ secrets.DBPASSWORD }} aws_account_id=$AWS_ACCOUNT_ID product_review_version=$PRODUCT_REVIEW_VERSION"
+                  ansible-playbook -i ./inventory/hosts.aws_ec2.yaml -u ${{ secrets.webserver_user }} --private-key=/home/runner/.ssh/flask_ec2.pem main.yml --extra-vars "Monitoring_Servers=$MONITORING_SERVER_GROUP"
               working-directory: ./ansible_playbook
