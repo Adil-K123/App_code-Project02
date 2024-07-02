@@ -1,8 +1,8 @@
 ---
 
-hosts: "{{ Monitoring_Servers }}"
-become: true
-tasks:
+- hosts: "{{ Monitoring_Servers }}"
+  become: true
+  tasks:
    - name: update and upgrade
      tags: always
      apt:
