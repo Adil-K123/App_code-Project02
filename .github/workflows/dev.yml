@@ -67,11 +67,11 @@ jobs:
                 aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
 
 
-            # - name: Build and push Docker images for Productreview_app to ECR
-            #   run: |
-            #     cd ${{ github.workspace }}/flask_app_code
-            #     docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/product_review:$PRODUCT_REVIEW_VERSION .
-            #     docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/product_review:$PRODUCT_REVIEW_VERSION
+            - name: Build and push Docker images for Productreview_app to ECR
+              run: |
+                cd ${{ github.workspace }}/flask_app_code
+                docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/product_review:$PRODUCT_REVIEW_VERSION .
+                docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/product_review:$PRODUCT_REVIEW_VERSION
 
             - name: Install Ansible,boto3 and store ssh key in runner
               run: |
