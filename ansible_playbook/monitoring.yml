@@ -29,7 +29,7 @@
     
    - name: create grafana db directory
      file:
-        path: /home/ubuntu/grafanadb
+        path: /home/ubuntu/grafana_db
         state: directory
         mode: '777'
    
@@ -40,4 +40,4 @@
 
    - name: Docker compose up
      shell: |
-        sudo docker compose -f monitoring.yml -d
+        sudo docker compose -f monitoring.yml up -d
