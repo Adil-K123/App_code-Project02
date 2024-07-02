@@ -35,7 +35,7 @@
    
    - name: Copy docker compose
      copy:
-        src: ../monitoring.yml 
+        src: ../monitoring_docker_compose.yml 
         dest: /home/ubuntu/monitoring.yml
 
    - name: Docker compose up
