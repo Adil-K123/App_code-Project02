@@ -67,11 +67,11 @@ jobs:
                 aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
 
 
-            - name: Build and push Docker images for Productreview_app to ECR
-              run: |
-                cd ${{ github.workspace }}/flask_app_code
-                docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/product_review:$PRODUCT_REVIEW_VERSION .
-                docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/product_review:$PRODUCT_REVIEW_VERSION
+            # - name: Build and push Docker images for Productreview_app to ECR
+            #   run: |
+            #     cd ${{ github.workspace }}/flask_app_code
+            #     docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/product_review:$PRODUCT_REVIEW_VERSION .
+            #     docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/product_review:$PRODUCT_REVIEW_VERSION
 
             - name: Install Ansible,boto3 and store ssh key in runner
               run: |
@@ -91,5 +91,5 @@ jobs:
                   RDS_ENDPOINT: ${{ env.RDS_ENDPOINT }}
               run: |
                   ansible-playbook -i ./inventory/hosts.aws_ec2.yaml -u ${{ secrets.webserver_user }} --private-key=/home/runner/.ssh/flask_ec2.pem main.yml --limit $WEB_SERVER_GROUP --extra-vars "WebServer1=$WEBSERVER1 rds_endpoint=$RDS_ENDPOINT dbusername=${{ secrets.DBUSERNAME }} dbpassword=${{ secrets.DBPASSWORD }} aws_account_id=$AWS_ACCOUNT_ID product_review_version=$PRODUCT_REVIEW_VERSION"
-                  ansible-playbook -i ./inventory/hosts.aws_ec2.yaml -u ${{ secrets.webserver_user }} --private-key=/home/runner/.ssh/flask_ec2.pem main.yml --extra-vars "Monitoring_Servers=$MONITORING_SERVER_GROUP"
+                  ansible-playbook -i ./inventory/hosts.aws_ec2.yaml -u ${{ secrets.webserver_user }} --private-key=/home/runner/.ssh/flask_ec2.pem monitoring.yml --extra-vars "Monitoring_Servers=$MONITORING_SERVER_GROUP"
               working-directory: ./ansible_playbook
