@@ -67,6 +67,7 @@ jobs:
     Build_and_Push_Docker_image:
        name: "Unittest_of_app_with_DB"
        runs-on: ubuntu-latest
+       needs: Tests
        steps:
         - name: Checkout code
           uses: actions/checkout@v2
@@ -115,6 +116,7 @@ jobs:
     Deploy_New_Version:
          name: "Copy new Docker compose file and deploy new version"
          runs-on: ubuntu-latest
+         needs: Build_and_Push_Docker_image
          steps:
           - name: Fetch Docker swarm leader ip and set as env variable
             run: |
