@@ -61,7 +61,7 @@
          mysql -h{{ rds_endpoint }} -u{{ dbusername }} -p{{ dbpassword }} -e "CREATE DATABASE IF NOT EXISTS product_reviews; USE product_reviews; CREATE TABLE IF NOT EXISTS reviews (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), product_name VARCHAR(255), review TEXT);"
 
     - name: Check if Swarm is already initialized
-      shell: docker info --format '{{ .Swarm.LocalNodeState }}'
+      shell: docker info --format '{{ "{{ .Swarm.LocalNodeState }}" }}'
       register: swarm_status
       changed_when: false
       
