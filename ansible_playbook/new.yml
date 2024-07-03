@@ -169,16 +169,12 @@
       copy:
         src: ../monitoring_files/monitoring_docker_compose.yml 
         dest: /home/ubuntu/monitoring_files/monitoring_docker_compose.yml
-      depends_on:
-         - create directories for monitoring files
-
+  
     - name: Docker compose up
       shell: |
         cd /home/ubuntu/monitoring_files
         sudo docker compose -f monitoring_docker_compose.yml up -d
-      depends_on:
-         - create directories for monitoring files
-    
+ 
     
 
     
