@@ -44,7 +44,7 @@
          "docker-compose-plugin" not in ansible_facts.packages
 
           
-- hosts: "{{ env_webserver_1}}"
+- hosts: "{{ env_webserver1 }}"
   become: true
   tasks:
     - name: Install mysql-client to configure db
@@ -77,7 +77,7 @@
       set_fact:
         worker_token: "{{ worker_join_token.stdout }}"
 
-- hosts: "{{ env_webserver_group}}"
+- hosts: "{{ env_webserver_group }}"
   become: true
   tasks:
     - name: Create environment file
