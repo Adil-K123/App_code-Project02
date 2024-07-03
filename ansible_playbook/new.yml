@@ -15,7 +15,8 @@
       apt:
         name:
            - curl
-           - ca-certificates 
+           - ca-certificates
+           - unzip 
         state: latest
         update_cache: yes
 
