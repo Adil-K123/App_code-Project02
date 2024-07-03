@@ -140,7 +140,7 @@
 
     - name: Join the Swarm as Worker if not already joined
       command: docker swarm join --token {{ hostvars['{{ env_webserver1 }}'].worker_token }} {{ hostvars['{{ env_webserver1 }}'].private_ip_address }}:2377
-      when: "'{{ ansible_hostname }}' not in groups['{{ env_webserver1 }}']" 
+      when: "'{{ ansible_hostname }}' not in groups[env_webserver1]"
 - hosts: "{{ monitoring_server_group }}"
   become: true
   tasks:
