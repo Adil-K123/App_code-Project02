@@ -1,15 +1,15 @@
-version: '2.28.1'
+version: '3'
 services:
   productreview_app:
     image: 767398069045.dkr.ecr.us-east-1.amazonaws.com/product_review:1.0
-    container_name: productreview_app
+    #container_name: productreview_app
     ports:
       - 8000:8000
     env_file:
       - /etc/productreview_app.env
   nginx:
     image: nginx
-    container_name: nginx
+    #container_name: nginx
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
     ports:
@@ -19,7 +19,7 @@ services:
       - productreview_app
   nginx-prometheus-exporter:
     image: nginx/nginx-prometheus-exporter:latest
-    container_name: nginx-prometheus-exporter
+    #container_name: nginx-prometheus-exporter
     ports:
       - 9113:9113
     environment:

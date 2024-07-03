@@ -53,7 +53,7 @@
            MYSQL_HOST={{ rds_endpoint }}
            MYSQL_USER={{ dbusername }}
            MYSQL_PASSWORD={{ dbpassword }}
-           MYSQL_DATABASE='product_reviews'
+           MYSQL_DATABASE=product_reviews
     
     - name: Install Docker
       tags: docker
@@ -116,6 +116,26 @@
         sudo docker compose down
         sudo docker image prune -af
         sudo docker compose up -d
+    
+    - name: copy prometheus yml file
+      copy:
+        src: ../prometheus/prometheus.yml
+        dest: /home/ubuntu/prometheus.yml
+    
+    - name: create grafana db directory
+      file:
+        path: /home/ubuntu/grafana_db
+        state: directory
+        mode: '777'
+   
+    - name: Copy docker compose
+     copy:
+        src: ../monitoring_docker_compose.yml 
+        dest: /home/ubuntu/monitoring.yml
+
+   - name: Docker compose up
+     shell: |
+        sudo docker compose -f monitoring.yml up -d
 
 
 
