@@ -110,7 +110,7 @@ jobs:
             env:
               RDS_ENDPOINT: ${{ env.RDS_ENDPOINT }}
             run: |
-              ansible-playbook -i ./inventory/hosts.aws_ec2.yaml -u ${{ secrets.WEBSERVER_USER }} --private-key=/home/runner/.ssh/flask_ec2.pem new.yml --extra-vars "env_webserver_group=$ENV_WEBSERVER_GROUP env_webserver1=$ENV_WEBSERVER1 env_webserver1_tag=$ENV_WEBSERVER1_TAG monitoring_server_group=$MONITORING_SERVER_GROUP rds_endpoint=$RDS_ENDPOINT dbusername=${{ secrets.DBUSERNAME }} dbpassword=${{ secrets.DBPASSWORD }} aws_account_id=$AWS_ACCOUNT_ID"
+              ansible-playbook -i ./inventory/hosts.aws_ec2.yaml -u ${{ secrets.WEBSERVER_USER }} --private-key=/home/runner/.ssh/flask_ec2.pem new.yml --extra-vars "env_webserver_group=$ENV_WEBSERVER_GROUP env_webserver1=$ENV_WEBSERVER1 monitoring_server_group=$MONITORING_SERVER_GROUP rds_endpoint=$RDS_ENDPOINT dbusername=${{ secrets.DBUSERNAME }} dbpassword=${{ secrets.DBPASSWORD }} aws_account_id=$AWS_ACCOUNT_ID"
             working-directory: ./ansible_playbook
 
     Deploy_New_Version:
