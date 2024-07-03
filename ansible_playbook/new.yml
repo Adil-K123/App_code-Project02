@@ -148,11 +148,15 @@
 - hosts: "{{ monitoring_server_group }}"
   become: true
   tasks:
-    - name: create directories for monitoring files
+    - name: create grafana_db directory
       file:
-        path: 
-           - /home/ubuntu/monitoring_files/grafana_db
-           - /home/ubuntu/monitoring_files/prometheus
+        path: /home/ubuntu/monitoring_files/grafana_db
+        state: directory
+        mode: '777'
+
+    - name: create prometheus directory
+      file:
+        path: /home/ubuntu/monitoring_files/prometheus
         state: directory
         mode: '777'
 
@@ -160,8 +164,6 @@
       copy:
         src: ../monitoring_files/prometheus/prometheus.yml
         dest: /home/ubuntu/monitoring_files/prometheus/prometheus.yml
-      depends_on:
-         - create directories for monitoring files
    
     - name: Copy docker compose
       copy:
