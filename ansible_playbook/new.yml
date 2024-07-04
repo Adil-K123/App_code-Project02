@@ -78,6 +78,10 @@
       set_fact:
         worker_token: "{{ worker_join_token.stdout }}"
 
+    - name: Print facts for env_webserver1
+      debug:
+        var: ansible_facts
+
 - hosts: "{{ env_webserver_group }}"
   become: true
   vars:
