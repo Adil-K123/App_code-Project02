@@ -1,4 +1,4 @@
-version: '3'
+version: '3.9'
 services:
   productreview_app:
     image: 767398069045.dkr.ecr.us-east-1.amazonaws.com/product_review:1.0
