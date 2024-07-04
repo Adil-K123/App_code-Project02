@@ -78,7 +78,7 @@
       set_fact:
         worker_token: "{{ worker_join_token.stdout }}"
       delegate_to: "{{ item }}"
-      loop: "{{ groups[env_webserver_group] }}"
+      loop: "{{ env_webserver_group }}"
 
 - hosts: "{{ env_webserver_group }}"
   become: true
