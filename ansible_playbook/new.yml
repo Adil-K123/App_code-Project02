@@ -78,9 +78,9 @@
       set_fact:
         worker_token: "{{ worker_join_token.stdout }}"
 
-    - name: Print facts for env_webserver1
+    - name: Print workertoken for env_webserver1
       debug:
-        var: ansible_facts
+        var: worker_token
 
 - hosts: "{{ env_webserver_group }}"
   become: true
@@ -146,7 +146,7 @@
         aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin {{ aws_account_id }}.dkr.ecr.us-east-1.amazonaws.com
 
     - name: Join the Swarm as Worker if not already joined
-      command: docker swarm join --token {{ groupvars[env_webserver1[0]]['ansible_facts']['worker_token'] }} {{ groupvars[env_webserver1[0]]['ansible_facts']['private_ip_address'] }}:2377
+      command: docker swarm join --token {{ hostvars[env_webserver1]['worker_token'] }} {{ hostvars[env_webserver1]['ansible_facts'][default_ipv4.address'] }}:2377
       when: inventory_hostname not in groups[env_webserver1]
 
 - hosts: "{{ monitoring_server_group }}"
