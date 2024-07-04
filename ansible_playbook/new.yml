@@ -148,7 +148,7 @@
     
     - name: Check Docker Swarm status
       shell: |
-        docker node inspect $(hostname) --format '{{ .Spec.Role }}' | grep -q 'worker'
+        docker node inspect $(hostname) --format '{{ "{{ .Spec.Role }}" }}' | grep -q 'worker'
       register: swarm_worker_check
       ignore_errors: true
       when: inventory_hostname not in groups[env_webserver1]
