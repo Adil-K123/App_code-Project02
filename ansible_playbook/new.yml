@@ -90,8 +90,8 @@
   tasks:
     - name: Print worker_token in the second play
       debug:
-        msg: "{{ worker_token }}"
-      when: inventory_hostname in groups[env_webserver1]
+        var: worker_token 
+      delegate to: "{{ env_webserver1 }}"
       register: worker_join_token
 
     - name: Set fact for worker join token
