@@ -136,7 +136,7 @@ jobs:
           - name: copy file via ssh password
             uses: appleboy/scp-action@v0.1.7
             with:
-             host: $SWARM_LEADER_IP
+             host: "$SWARM_LEADER_IP"
              username: ${{ secrets.WEBSERVER_USER }}
              key: ${{ secrets.ANSIBLE_SSH_KEY }}
              source: docker-compose.yaml
