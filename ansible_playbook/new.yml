@@ -145,10 +145,17 @@
       tags: aws,ecr
       shell: |
         aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin {{ aws_account_id }}.dkr.ecr.us-east-1.amazonaws.com
+    
+    - name: Check Docker Swarm status
+      docker_swarm_info:
+      register: swarm_info
+      when: inventory_hostname not in groups[env_webserver1]
 
     - name: Join the Swarm as Worker if not already joined
       command: docker swarm join --token "{{ worker_token }}" {{ hostvars[groups[env_webserver1][0]].ansible_facts.default_ipv4.address }}:2377
-      when: inventory_hostname not in groups[env_webserver1]
+      when: 
+         - inventory_hostname not in groups[env_webserver1]
+         - "'worker' not in swarm_info.nodes | map(attribute='role') | list"
 
 - hosts: "{{ monitoring_server_group }}"
   become: true
