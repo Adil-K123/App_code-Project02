@@ -122,7 +122,8 @@ jobs:
          steps:
           - name: Fetch Docker swarm leader ip and set as env variable
             run: |
-                export SWARM_LEADER_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=$ENV_WEBSERVER1_TAG" --query "Reservations[0].Instances[0].PublicIpAddress" --output text)
+                swarm_leader_ip=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=$ENV_WEBSERVER1_TAG" --query "Reservations[0].Instances[0].PublicIpAddress" --output text)
+                echo "SWARM_LEADER_IP=${swarm_leader_ip}" >> $GITHUB_ENV
           
           - name: Install SSH
             uses: webfactory/ssh-agent@v0.5.4
