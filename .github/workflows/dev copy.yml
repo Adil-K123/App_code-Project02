@@ -136,7 +136,7 @@ jobs:
               deployment_mode: docker-swarm
               copy_stack_file: true
               deploy_path: /home/ubuntu
-              stack_file_path: ./docker-compose.yaml
+              stack_file_path: ./docker-compose.yml
               keep_files: 5
               docker_remove_orphans: true
               stack_name: mystack
