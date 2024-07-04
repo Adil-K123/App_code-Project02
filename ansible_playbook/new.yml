@@ -91,7 +91,16 @@
     - name: Print worker_token in the second play
       debug:
         msg: "{{ worker_token }}"
-      
+      when: inventory_hostname in groups[env_webserver1]
+      register: worker_join_token
+
+    - name: Set fact for worker join token
+      set_fact:
+        worker_token: "{{ worker_join_token.stdout }}"
+
+    - name: Another task that uses worker_token
+      debug:
+        msg: "Worker token is {{ worker_token }}"
 
     - name: Create environment file
       tags: environment,db
