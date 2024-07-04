@@ -125,22 +125,34 @@ jobs:
               export SWARM_LEADER_IP=$(ansible localhost -m ec2_instance_info \
               -a "aws_access_key=$AWS_ACCESS_KEY_ID aws_secret_key=$SECRET_ACCESS_KEY region=$AWS_DEFAULT_REGION filters='tag:Name=$ENV_WEBSERVER1'" \
               --become-user=root | jq -r '.instances[0].public_ip_address')
-
-          - name: Deploy Docker Stack
-            uses: tristiisch/docker-stack-deployment@v2
+          
+          - name: Install SSH
+            uses: webfactory/ssh-agent@v0.5.4
             with:
-              remote_docker_host: $SWARM_LEADER_IP
-              remote_docker_username: ${{ secrets.WEBSERVER_USER }}
-              ssh_private_key: ${{ secrets.ANSIBLE_SSH_KEY }}
-              ssh_public_key: ${{ secrets.PUBLIC_KEY }}
-              deployment_mode: docker-swarm
-              copy_stack_file: true
-              deploy_path: /home/ubuntu
-              stack_file_path: docker-compose.yml
-              keep_files: 5
-              docker_remove_orphans: true
-              stack_name: mystack
-              args: "--detach=false"
+              ssh-private-key: ${{ secrets.ANSIBLE_SSH_KEY }}
+          
+          - name: Copy Docker Compose file to server
+            run: scp ./docker-compose.yml ${{ secrets.WEBSERVER_USER }}@$SWARM_LEADER_IP:/home/ubuntu/docker-compose.yml
+
+          - name: Deploy Docker stack
+            run: |
+              ssh ${{ secrets.WEBSERVER_USER }}@$SWARM_LEADER_IP "docker stack deploy -c /home/ubuntu/docker-compose.yml mystack --detach=false"
+
+          # - name: Deploy Docker Stack
+          #   uses: tristiisch/docker-stack-deployment@v2
+          #   with:
+          #     remote_docker_host: $SWARM_LEADER_IP
+          #     remote_docker_username: ${{ secrets.WEBSERVER_USER }}
+          #     ssh_private_key: ${{ secrets.ANSIBLE_SSH_KEY }}
+          #     ssh_public_key: ${{ secrets.PUBLIC_KEY }}
+          #     deployment_mode: docker-swarm
+          #     copy_stack_file: true
+          #     deploy_path: /home/ubuntu
+          #     stack_file_path: ./docker-compose.yml
+          #     keep_files: 5
+          #     docker_remove_orphans: true
+          #     stack_name: mystack
+          #     args: "--detach=false"
 
             
         
