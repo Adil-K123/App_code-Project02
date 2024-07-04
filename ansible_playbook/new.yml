@@ -87,7 +87,7 @@
 
     - name: Another task that uses worker_token
       debug:
-        msg:  "{{ hostvars[env_webserver1].worker_token }}"
+        msg:  "{{ hostvars[groups[env_webserver1][0]].worker_token }}"
 
     - name: Create environment file
       tags: environment,db
