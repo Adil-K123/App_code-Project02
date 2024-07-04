@@ -149,8 +149,7 @@ jobs:
                username: ${{ secrets.WEBSERVER_USER }}
                key: ${{ secrets.ANSIBLE_SSH_KEY }}
                script: |
-                 aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{env.AWS_ACCOUNT_ID}}.dkr.ecr.us-east-1.amazonaws.com
-                 sudo docker stack deploy --detach=false -c docker-compose.yaml mystack
+                 sudo docker stack deploy --with-registry-auth --detach=false -c docker-compose.yaml mystack
 
           # - name: Deploy Docker stack
           #   run: |
