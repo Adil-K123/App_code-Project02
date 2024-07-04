@@ -142,14 +142,14 @@ jobs:
              source: docker-compose.yaml
              target: /home/ubuntu
 
-          - name: Deploy
-            uses: kitconcept/docker-stack-deploy@v1.0.1
+          - name: Run SSH command
+            uses: appleboy/ssh-action@master
             with:
-               remote_host: ${{ env.SWARM_LEADER_IP }}
-               remote_user: ${{ secrets.WEBSERVER_USER }}
-               remote_private_key: ${{ secrets.ANSIBLE_SSH_KEY }}
-               stack_file: "docker-compose.yaml"
-               stack_name: "mystack"
+               host: ${{ env.SWARM_LEADER_IP }}
+               username: ${{ secrets.WEBSERVER_USER }}
+               key: ${{ secrets.ANSIBLE_SSH_KEY }}
+               script: |
+                 docker stack deploy --detach=false -c docker-compose.yaml mystack
 
           # - name: Deploy Docker stack
           #   run: |
