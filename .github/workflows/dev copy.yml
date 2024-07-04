@@ -149,7 +149,7 @@ jobs:
                username: ${{ secrets.WEBSERVER_USER }}
                key: ${{ secrets.ANSIBLE_SSH_KEY }}
                script: |
-                 docker stack deploy --detach=false -c docker-compose.yaml mystack
+                 sudo docker stack deploy --detach=false -c docker-compose.yaml mystack
 
           # - name: Deploy Docker stack
           #   run: |
