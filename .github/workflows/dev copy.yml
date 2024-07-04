@@ -142,6 +142,15 @@ jobs:
              source: docker-compose.yaml
              target: /home/ubuntu
 
+          - name: Deploy
+            uses: kitconcept/docker-stack-deploy@v1.0.1
+            with:
+               remote_host: ${{ env.SWARM_LEADER_IP }}
+               remote_user: ${{ secrets.WEBSERVER_USER }}
+               remote_private_key: ${{ secrets.ANSIBLE_SSH_KEY }}
+               stack_file: "docker-compose.yaml"
+               stack_name: "mystack"
+
           # - name: Deploy Docker stack
           #   run: |
           #     ssh ${{ secrets.WEBSERVER_USER }}@$SWARM_LEADER_IP "docker stack deploy -c /home/ubuntu/docker-compose.yml mystack --detach=false"
