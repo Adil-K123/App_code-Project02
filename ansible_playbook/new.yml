@@ -77,10 +77,7 @@
     - name: Set fact for worker join token
       set_fact:
         worker_token: "{{ worker_join_token.stdout }}"
-
-    - name: Print workertoken for env_webserver1
-      debug:
-        var: worker_token
+      delegate_to: "{{ env_webserver_group }}"
 
 - hosts: "{{ env_webserver_group }}"
   become: true
@@ -88,15 +85,6 @@
     env_webserver1: "{{ lookup('vars', 'env_webserver1') | default('') }}"
 
   tasks:
-    - name: Print worker_token in the second play
-      debug:
-        var: worker_token 
-      delegate to: "{{ env_webserver1 }}"
-      register: worker_join_token
-
-    - name: Set fact for worker join token
-      set_fact:
-        worker_token: "{{ worker_join_token.stdout }}"
 
     - name: Another task that uses worker_token
       debug:
