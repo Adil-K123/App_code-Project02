@@ -134,7 +134,7 @@ jobs:
             run: ssh-keyscan -H $SWARM_LEADER_IP >> ~/.ssh/known_hosts
           
           - name: Copy Docker Compose file to server
-            run: scp ./docker-compose.yml ${{ secrets.WEBSERVER_USER }}@$SWARM_LEADER_IP:/home/ubuntu/docker-compose.yml
+            run: scp $GITHUB_WORKSPACE/docker-compose.yml ${{ secrets.WEBSERVER_USER }}@$SWARM_LEADER_IP:/home/ubuntu/docker-compose.yml
 
           - name: Deploy Docker stack
             run: |
