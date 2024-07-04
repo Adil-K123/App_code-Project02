@@ -77,7 +77,8 @@
     - name: Set fact for worker join token
       set_fact:
         worker_token: "{{ worker_join_token.stdout }}"
-      delegate_to: "{{ env_webserver_group }}"
+      delegate_to: "{{ item }}"
+      loop: "{{ groups[env_webserver_group] }}"
 
 - hosts: "{{ env_webserver_group }}"
   become: true
