@@ -77,8 +77,6 @@
     - name: Set fact for worker join token
       set_fact:
         worker_token: "{{ worker_join_token.stdout }}"
-      delegate_to: "{{ item }}"
-      loop: "{{ query('inventory_hostnames', vars.env_webserver_group) }}"
 
 - hosts: "{{ env_webserver_group }}"
   become: true
@@ -89,7 +87,7 @@
 
     - name: Another task that uses worker_token
       debug:
-        msg: "Worker token is {{ worker_token }}"
+        msg:  "{{hostvars[env_webserver1]['worker_token']}}"
 
     - name: Create environment file
       tags: environment,db
