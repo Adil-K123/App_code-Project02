@@ -88,6 +88,10 @@
     env_webserver1: "{{ lookup('vars', 'env_webserver1') | default('') }}"
 
   tasks:
+    - name: Print worker_token in the second play
+      debug:
+        var: hostvars[env_webserver1]['worker_token']
+
     - name: Create environment file
       tags: environment,db
       copy:
