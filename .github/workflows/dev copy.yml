@@ -13,7 +13,7 @@ env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   DB_INSTANCE_IDENTIFIER: devproductreviewdb
-  ENV_WEBSERVER_GROUP: devWebServers
+  ENV_WEBSERVER_GROUP: tag_Groups_devWebServers
   MONITORING_SERVER_GROUP: tag_Name_MonitoringServer*
   ENV_WEBSERVER1: tag_Name_devWebServer1
   ENV_WEBSERVER1_TAG: devWebServer1

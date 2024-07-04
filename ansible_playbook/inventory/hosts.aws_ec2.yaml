@@ -12,16 +12,7 @@ keyed_groups:
   - key: placement.region
     prefix: aws_region
 
-filter: 
-  tags: 
-    - devWebServer* 
-    - stagingWebServer* 
-    - prodWebServer* 
-    
-groups: 
-  devWebServers: "'tags' in group and 'tag' in tags and tags['tag'] is search('devWebServer*')" 
-  stagingWebServers: "'tags' in group and 'tag' in tags and tags['tag'] is search('stagingWebServer*')" 
-  prodWebServers: "'tags' in group and 'tag' in tags and tags['tag'] is search('prodWebServer*')"
+
 
 
 
