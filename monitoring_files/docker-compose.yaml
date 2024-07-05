@@ -15,7 +15,7 @@ services:
     #ports: 
     #  - 9100:9100 
     networks: 
-      - project02
+      - app_stack_project02
     deploy:
         mode: global
         
@@ -29,7 +29,7 @@ services:
         - /sys:/sys:ro
         - /var/lib/docker/:/var/lib/docker:ro
       networks:
-        - project02
+        - app_stack_project02
       deploy:
         mode: global
 
@@ -47,7 +47,7 @@ services:
       - '--web.console.templates=/etc/prometheus/consoles' 
       - '--web.enable-lifecycle' 
     networks:
-      - project02
+      - app_stack_project02
     deploy:
       replicas: 1
       placement:
@@ -61,7 +61,7 @@ services:
     ports:
       - 3000:3000
     networks:
-      - project02
+      - app_stack_project02
     depends_on:
       - prometheus
     deploy:
@@ -71,5 +71,5 @@ services:
            - node.role == manager
 
 networks:
-  project02:
+  app_stack_project02:
     external: true
