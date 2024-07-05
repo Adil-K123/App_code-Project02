@@ -8,3 +8,6 @@ flask_app_code/.pytest_cache
 
 #local service conf
 service_conf
+
+#unused files
+unused_files

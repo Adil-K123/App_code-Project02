@@ -3,7 +3,6 @@ name: "Unit test and deploy to dev servers"
 on:
     push:
         branches:
-            - dev
             - feature
 
 env:
@@ -12,12 +11,7 @@ env:
   AWS_DEFAULT_REGION: us-east-1
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  ENVIRONMENT: dev
-  # DB_INSTANCE_IDENTIFIER: devproductreviewdb
-  # ENV_WEBSERVER_GROUP: tag_Groups_devWebServers
-  # MONITORING_SERVER_GROUP: tag_Groups_MonitoringServers
-  # ENV_WEBSERVER1: tag_Name_devWebServer1
-  # ENV_WEBSERVER1_TAG: devWebServer1
+  ENVIRONMENT: dev        #just for ansible play --check
 
 jobs:
     Tests:
@@ -79,8 +73,8 @@ jobs:
          
     #     - name: Build and push Docker images for Productreview_app to ECR
     #       run: |
-    #         docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/product_review:$PRODUCT_REVIEW_VERSION .
-    #         docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/product_review:$PRODUCT_REVIEW_VERSION
+    #         docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/product_review:$PRODUCT_REVIEW_VERSION-$ENVIRONMENT .
+    #         docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/product_review:$PRODUCT_REVIEW_VERSION-$ENVIRONMENT
     #       working-directory: ./flask_app_code
           
 
@@ -107,47 +101,47 @@ jobs:
             env:
               RDS_ENDPOINT: ${{ env.RDS_ENDPOINT }}
             run: |
-              ansible-playbook -i ./inventory/hosts.aws_ec2.yaml -u ${{ secrets.WEBSERVER_USER }} --private-key=/home/runner/.ssh/flask_ec2.pem main.yaml --extra-vars "env_webserver_group=tag_Groups_${ENVIRONMENT}WebServers env_webserver1=tag_Name_${ENVIRONMENT}WebServer1 rds_endpoint=$RDS_ENDPOINT dbusername=${{ secrets.DBUSERNAME }} dbpassword=${{ secrets.DBPASSWORD }} aws_account_id=$AWS_ACCOUNT_ID"
+              ansible-playbook -i ./inventory/hosts.aws_ec2.yaml -u ${{ secrets.WEBSERVER_USER }} --private-key=/home/runner/.ssh/flask_ec2.pem main.yaml --extra-vars "env_webserver_group=tag_Groups_${ENVIRONMENT}WebServers env_webserver1=tag_Name_${ENVIRONMENT}WebServer1 rds_endpoint=$RDS_ENDPOINT dbusername=${{ secrets.DBUSERNAME }} dbpassword=${{ secrets.DBPASSWORD }} aws_account_id=$AWS_ACCOUNT_ID" --check
             working-directory: ./ansible_playbook
 
-    Deploy_New_Version:
-         name: "Copy new Docker compose file and deploy new version"
-         runs-on: ubuntu-latest
-         needs: 
-          #- Build_and_Push_Docker_image
-          - Server-RDS_DB-Monitoring_configs
-         steps:
-          - name: Checkout code
-            uses: actions/checkout@v2
+    # Deploy_New_Version:
+    #      name: "Copy new Docker compose file and deploy new version"
+    #      runs-on: ubuntu-latest
+    #      needs: 
+    #       - Build_and_Push_Docker_image
+    #       - Server-RDS_DB-Monitoring_configs
+    #      steps:
+    #       - name: Checkout code
+    #         uses: actions/checkout@v2
 
-          - name: Fetch Docker swarm leader ip and set as env variable
-            run: |
-                swarm_leader_ip=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=${ENVIRONMENT}WebServer1" --query "Reservations[0].Instances[0].PublicIpAddress" --output text)
-                echo "SWARM_LEADER_IP=${swarm_leader_ip}" >> $GITHUB_ENV
+    #       - name: Fetch Docker swarm leader ip and set as env variable
+    #         run: |
+    #             swarm_leader_ip=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=${ENVIRONMENT}WebServer1" --query "Reservations[0].Instances[0].PublicIpAddress" --output text)
+    #             echo "SWARM_LEADER_IP=${swarm_leader_ip}" >> $GITHUB_ENV
           
-          - name: Copy appstack compose file via ssh 
-            env:
-              SWARM_LEADER_IP: ${{ env.SWARM_LEADER_IP }}
-            uses: appleboy/scp-action@v0.1.7
-            with:
-             host: ${{ env.SWARM_LEADER_IP }}
-             username: ${{ secrets.WEBSERVER_USER }}
-             key: ${{ secrets.ANSIBLE_SSH_KEY }}
-             source: "app_compose_files/docker-compose.yaml"
-             target: /home/ubuntu/
+    #       - name: Copy appstack compose file via ssh 
+    #         env:
+    #           SWARM_LEADER_IP: ${{ env.SWARM_LEADER_IP }}
+    #         uses: appleboy/scp-action@v0.1.7
+    #         with:
+    #          host: ${{ env.SWARM_LEADER_IP }}
+    #          username: ${{ secrets.WEBSERVER_USER }}
+    #          key: ${{ secrets.ANSIBLE_SSH_KEY }}
+    #          source: "app_compose_files/docker-compose.yaml"
+    #          target: /home/ubuntu/
 
-          - name: Deploy docker app_stack and monitoring_stack
-            env:
-              SWARM_LEADER_IP: ${{ env.SWARM_LEADER_IP }}
-            uses: appleboy/ssh-action@master
-            with:
-               host: ${{ env.SWARM_LEADER_IP }}
-               username: ${{ secrets.WEBSERVER_USER }}
-               key: ${{ secrets.ANSIBLE_SSH_KEY }}
-               script: |
-                 cd /home/ubuntu/app_compose_files/
-                 sudo docker stack deploy --with-registry-auth --detach=false -c docker-compose.yaml app_stack
-                 cd /home/ubuntu/monitoring_files
-                 sudo docker stack deploy --with-registry-auth --detach=false -c /home/ubuntu/monitoring_files/docker-compose.yaml monitoring_stack
+    #       - name: Deploy docker app_stack and monitoring_stack
+    #         env:
+    #           SWARM_LEADER_IP: ${{ env.SWARM_LEADER_IP }}
+    #         uses: appleboy/ssh-action@master
+    #         with:
+    #            host: ${{ env.SWARM_LEADER_IP }}
+    #            username: ${{ secrets.WEBSERVER_USER }}
+    #            key: ${{ secrets.ANSIBLE_SSH_KEY }}
+    #            script: |
+    #              cd /home/ubuntu/app_compose_files/
+    #              sudo docker stack deploy --with-registry-auth --detach=false -c docker-compose.yaml app_stack
+    #              cd /home/ubuntu/monitoring_files
+    #              sudo docker stack deploy --with-registry-auth --detach=false -c /home/ubuntu/monitoring_files/docker-compose.yaml monitoring_stack
 
          

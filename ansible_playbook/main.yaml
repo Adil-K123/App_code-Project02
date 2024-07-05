@@ -185,36 +185,6 @@
       when: 
          - inventory_hostname not in groups[env_webserver1]
          - swarm_status.stdout == "inactive"
-
-# - hosts: "{{ monitoring_server_group }}"
-#   become: true
-#   tasks:
-#     - name: create grafana_db directory
-#       file:
-#         path: /home/ubuntu/monitoring_files/grafana_db
-#         state: directory
-#         mode: '777'
-
-#     - name: create prometheus directory
-#       file:
-#         path: /home/ubuntu/monitoring_files/prometheus
-#         state: directory
-#         mode: '777'
-
-#     - name: copy prometheus yml file
-#       copy:
-#         src: ../monitoring_files/prometheus/prometheus.yml
-#         dest: /home/ubuntu/monitoring_files/prometheus/prometheus.yml
-   
-#     - name: Copy docker compose
-#       copy:
-#         src: ../monitoring_files/monitoring_docker_compose.yml 
-#         dest: /home/ubuntu/monitoring_files/monitoring_docker_compose.yml
-  
-#     - name: Docker compose up
-#       shell: |
-#         cd /home/ubuntu/monitoring_files
-#         sudo docker compose -f monitoring_docker_compose.yml up -d
  
     
 
