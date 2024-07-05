@@ -145,8 +145,7 @@ jobs:
                username: ${{ secrets.WEBSERVER_USER }}
                key: ${{ secrets.ANSIBLE_SSH_KEY }}
                script: |
-                 sudo docker stack deploy --with-registry-auth --detach=false -c ./app_compose_files/docker-compose.yaml app_stack
-                 sleep 60
-                 sudo docker stack deploy --with-registry-auth --detach=false -c ./monitoring_files/docker-compose.yaml monitoring_stack
+                 sudo docker stack deploy --with-registry-auth --detach=false -c /home/ubuntu/app_compose_files/docker-compose.yaml app_stack
+                 sudo docker stack deploy --with-registry-auth --detach=false -c /home/ubuntu/monitoring_files/docker-compose.yaml monitoring_stack
 
          
