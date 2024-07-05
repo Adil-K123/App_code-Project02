@@ -65,23 +65,23 @@ jobs:
               working-directory: ./flask_app_code
 
 
-    Build_and_Push_Docker_image:
-       name: "Build_and_Push_Docker_image"
-       runs-on: ubuntu-latest
-       needs: Tests
-       steps:
-        - name: Checkout code
-          uses: actions/checkout@v2
+    # Build_and_Push_Docker_image:
+    #    name: "Build_and_Push_Docker_image"
+    #    runs-on: ubuntu-latest
+    #    needs: Tests
+    #    steps:
+    #     - name: Checkout code
+    #       uses: actions/checkout@v2
 
-        - name: Configure AWS credentials for ECR
-          run: |
-            aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+    #     - name: Configure AWS credentials for ECR
+    #       run: |
+    #         aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
          
-        - name: Build and push Docker images for Productreview_app to ECR
-          run: |
-            docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/product_review:$PRODUCT_REVIEW_VERSION .
-            docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/product_review:$PRODUCT_REVIEW_VERSION
-          working-directory: ./flask_app_code
+    #     - name: Build and push Docker images for Productreview_app to ECR
+    #       run: |
+    #         docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/product_review:$PRODUCT_REVIEW_VERSION .
+    #         docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/product_review:$PRODUCT_REVIEW_VERSION
+    #       working-directory: ./flask_app_code
           
 
     Server-RDS_DB-Monitoring_configs:
@@ -114,7 +114,7 @@ jobs:
          name: "Copy new Docker compose file and deploy new version"
          runs-on: ubuntu-latest
          needs: 
-          - Build_and_Push_Docker_image
+          #- Build_and_Push_Docker_image
           - Server-RDS_DB-Monitoring_configs
          steps:
           - name: Checkout code
@@ -134,20 +134,20 @@ jobs:
              username: ${{ secrets.WEBSERVER_USER }}
              key: ${{ secrets.ANSIBLE_SSH_KEY }}
              source: "app_compose_files/docker-compose.yaml"
-             target: /home/ubuntu/app_compose_files
+             target: /home/ubuntu/
 
-          - name: Deploy docker app_stack and monitoring_stack
-            env:
-              SWARM_LEADER_IP: ${{ env.SWARM_LEADER_IP }}
-            uses: appleboy/ssh-action@master
-            with:
-               host: ${{ env.SWARM_LEADER_IP }}
-               username: ${{ secrets.WEBSERVER_USER }}
-               key: ${{ secrets.ANSIBLE_SSH_KEY }}
-               script: |
-                 cd /home/ubuntu/app_compose_files/
-                 sudo docker stack deploy --with-registry-auth --detach=false -c docker-compose.yaml app_stack
-                 cd /home/ubuntu/monitoring_files
-                 sudo docker stack deploy --with-registry-auth --detach=false -c /home/ubuntu/monitoring_files/docker-compose.yaml monitoring_stack
+          # - name: Deploy docker app_stack and monitoring_stack
+          #   env:
+          #     SWARM_LEADER_IP: ${{ env.SWARM_LEADER_IP }}
+          #   uses: appleboy/ssh-action@master
+          #   with:
+          #      host: ${{ env.SWARM_LEADER_IP }}
+          #      username: ${{ secrets.WEBSERVER_USER }}
+          #      key: ${{ secrets.ANSIBLE_SSH_KEY }}
+          #      script: |
+          #        cd /home/ubuntu/app_compose_files/
+          #        sudo docker stack deploy --with-registry-auth --detach=false -c docker-compose.yaml app_stack
+          #        cd /home/ubuntu/monitoring_files
+          #        sudo docker stack deploy --with-registry-auth --detach=false -c /home/ubuntu/monitoring_files/docker-compose.yaml monitoring_stack
 
          
