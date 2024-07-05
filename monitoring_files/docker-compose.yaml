@@ -1,0 +1,82 @@
+version: '3.9'
+services:
+  node-exporter: 
+    image: prom/node-exporter:latest 
+    restart: unless-stopped 
+    volumes: 
+      - /proc:/host/proc:ro 
+      - /sys:/host/sys:ro 
+      - /:/rootfs:ro 
+    command: 
+      - '--path.procfs=/host/proc' 
+      - '--path.rootfs=/rootfs' 
+      - '--path.sysfs=/host/sys' 
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)' 
+    networks: 
+      - app_stack_project02
+    deploy:
+        mode: global
+
+  nginx-prometheus-exporter:
+    image: nginx/nginx-prometheus-exporter:latest
+    environment:
+      - SSL_VERIFY=false
+    command:
+      -nginx.scrape-uri http://nginx:80/stub_status
+    networks:
+      - app_stack_project02
+        
+  cadvisor:
+      image: gcr.io/cadvisor/cadvisor:v0.47.1
+      command: -logtostderr -docker_only
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock:ro
+        - /:/rootfs:ro
+        - /var/run:/var/run
+        - /sys:/sys:ro
+        - /var/lib/docker/:/var/lib/docker:ro
+      networks:
+        - app_stack_project02
+      deploy:
+        mode: global
+
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - 9090:9090
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus:/prometheus
+    command: 
+      - '--config.file=/etc/prometheus/prometheus.yml' 
+      - '--storage.tsdb.path=/prometheus' 
+      - '--web.console.libraries=/etc/prometheus/console_libraries' 
+      - '--web.console.templates=/etc/prometheus/consoles' 
+      - '--web.enable-lifecycle' 
+    networks:
+      - app_stack_project02
+    deploy:
+      replicas: 1
+      placement:
+         constraints:
+           - node.role == manager
+
+  grafana:
+    image: grafana/grafana
+    volumes:
+      - ./grafana_db:/var/lib/grafana
+    ports:
+      - 3000:3000
+    networks:
+      - app_stack_project02
+    depends_on:
+      - prometheus
+    deploy:
+      replicas: 1
+      placement:
+         constraints:
+           - node.role == manager
+
+networks:
+  app_stack_project02:
+    external: true
