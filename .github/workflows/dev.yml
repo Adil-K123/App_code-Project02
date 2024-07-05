@@ -140,7 +140,7 @@ jobs:
                key: ${{ secrets.ANSIBLE_SSH_KEY }}
                script: |
                  cd /home/ubuntu/app_compose_files/
-                 sudo docker stack deploy --with-registry-auth --detach=false -c docker-compose.yaml app_stack
+                 sudo docker stack deploy --with-registry-auth --detach=false -c docker-compose-${{ env.ENVIRONMENT }}.yaml app_stack
                  cd /home/ubuntu/monitoring_files
                  sudo docker stack deploy --with-registry-auth --detach=false -c /home/ubuntu/monitoring_files/docker-compose.yaml monitoring_stack
 
