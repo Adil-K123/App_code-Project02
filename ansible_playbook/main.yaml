@@ -61,6 +61,16 @@
       command: |
          mysql -h{{ rds_endpoint }} -u{{ dbusername }} -p{{ dbpassword }} -e "CREATE DATABASE IF NOT EXISTS product_reviews; USE product_reviews; CREATE TABLE IF NOT EXISTS reviews (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), product_name VARCHAR(255), review TEXT);"
 
+    - name: ensures nginx conf dir exists
+      file: 
+         path: /home/ubuntu/nginx
+         state: directory
+
+    - name: Copy file
+      copy:
+         src: ../nginx/default.conf
+         dest: /home/ubuntu/nginx/default.conf
+
     - name: Check if Swarm is already initialized
       shell: docker info --format '{{ "{{ .Swarm.LocalNodeState }}" }}'
       register: swarm_status
@@ -126,16 +136,6 @@
            MYSQL_USER={{ dbusername }}
            MYSQL_PASSWORD={{ dbpassword }}
            MYSQL_DATABASE=product_reviews
-
-    - name: ensures nginx conf dir exists
-      file: 
-         path: /home/ubuntu/nginx
-         state: directory
-
-    - name: Copy file
-      copy:
-         src: ../nginx/default.conf
-         dest: /home/ubuntu/nginx/default.conf
 
     - name: Check if AWS CLI is installed
       command: which aws

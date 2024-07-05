@@ -133,8 +133,8 @@ jobs:
              host: ${{ env.SWARM_LEADER_IP }}
              username: ${{ secrets.WEBSERVER_USER }}
              key: ${{ secrets.ANSIBLE_SSH_KEY }}
-             source: app_compose_files/docker-compose.yaml
-             target: /home/ubuntu/app_compose_files
+             source: app_compose_files
+             target: /home/ubuntu
 
           - name: Deploy docker app_stack and monitoring_stack
             env:
