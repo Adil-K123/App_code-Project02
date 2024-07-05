@@ -29,20 +29,6 @@ services:
          constraints:
            - node.role == manager
 
-  # nginx-prometheus-exporter:
-  #   image: nginx/nginx-prometheus-exporter:latest
-  #   #container_name: nginx-prometheus-exporter
-  #   ports:
-  #     - 9113:9113
-  #   environment:
-  #     - SSL_VERIFY=false
-  #   command:
-  #     -nginx.scrape-uri http://nginx:80/stub_status
-  #   networks:
-  #     - project02
-  #   depends_on:
-  #     - nginx
-
 networks:
   project02:
     driver: overlay

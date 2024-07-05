@@ -18,6 +18,15 @@ services:
       - app_stack_project02
     deploy:
         mode: global
+
+  nginx-prometheus-exporter:
+    image: nginx/nginx-prometheus-exporter:latest
+    environment:
+      - SSL_VERIFY=false
+    command:
+      -nginx.scrape-uri http://nginx:80/stub_status
+    networks:
+      - app_stack_project02
         
   cadvisor:
       image: gcr.io/cadvisor/cadvisor:v0.47.1

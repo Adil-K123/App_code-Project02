@@ -26,3 +26,8 @@ scrape_configs:
     relabel_configs:
       - source_labels: [__meta_docker_swarm_task_node_name]
         target_label: 'node'
+
+  - job_name: 'nginx-prom-exporter'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['monitoring_stack_nginx-prometheus-exporter:9113']
