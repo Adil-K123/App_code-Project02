@@ -77,6 +77,34 @@
     - name: Set fact for worker join token
       set_fact:
         worker_token: "{{ worker_join_token.stdout }}"
+    
+    - name: Create app_compose_files_directory
+      file:
+        path: /home/ubuntu/app_compose_files
+        state: directory
+        mode: '777'
+
+    - name: create grafana_db directory
+      file:
+        path: /home/ubuntu/monitoring_files/grafana_db
+        state: directory
+        mode: '777'
+
+    - name: create prometheus directory
+      file:
+        path: /home/ubuntu/monitoring_files/prometheus
+        state: directory
+        mode: '777'
+
+    - name: copy prometheus yml file
+      copy:
+        src: ../monitoring_files/prometheus/prometheus.yml
+        dest: /home/ubuntu/monitoring_files/prometheus/prometheus.yml
+
+    - name: Copy docker compose
+      copy:
+         src: ../monitoring_files/docker-compose.yaml 
+         dest: /home/ubuntu/monitoring_files/docker-compose.yaml
 
 - hosts: "{{ env_webserver_group }}"
   become: true
@@ -158,35 +186,35 @@
          - inventory_hostname not in groups[env_webserver1]
          - swarm_status.stdout == "inactive"
 
-- hosts: "{{ monitoring_server_group }}"
-  become: true
-  tasks:
-    - name: create grafana_db directory
-      file:
-        path: /home/ubuntu/monitoring_files/grafana_db
-        state: directory
-        mode: '777'
+# - hosts: "{{ monitoring_server_group }}"
+#   become: true
+#   tasks:
+#     - name: create grafana_db directory
+#       file:
+#         path: /home/ubuntu/monitoring_files/grafana_db
+#         state: directory
+#         mode: '777'
 
-    - name: create prometheus directory
-      file:
-        path: /home/ubuntu/monitoring_files/prometheus
-        state: directory
-        mode: '777'
+#     - name: create prometheus directory
+#       file:
+#         path: /home/ubuntu/monitoring_files/prometheus
+#         state: directory
+#         mode: '777'
 
-    - name: copy prometheus yml file
-      copy:
-        src: ../monitoring_files/prometheus/prometheus.yml
-        dest: /home/ubuntu/monitoring_files/prometheus/prometheus.yml
+#     - name: copy prometheus yml file
+#       copy:
+#         src: ../monitoring_files/prometheus/prometheus.yml
+#         dest: /home/ubuntu/monitoring_files/prometheus/prometheus.yml
    
-    - name: Copy docker compose
-      copy:
-        src: ../monitoring_files/monitoring_docker_compose.yml 
-        dest: /home/ubuntu/monitoring_files/monitoring_docker_compose.yml
+#     - name: Copy docker compose
+#       copy:
+#         src: ../monitoring_files/monitoring_docker_compose.yml 
+#         dest: /home/ubuntu/monitoring_files/monitoring_docker_compose.yml
   
-    - name: Docker compose up
-      shell: |
-        cd /home/ubuntu/monitoring_files
-        sudo docker compose -f monitoring_docker_compose.yml up -d
+#     - name: Docker compose up
+#       shell: |
+#         cd /home/ubuntu/monitoring_files
+#         sudo docker compose -f monitoring_docker_compose.yml up -d
  
     
 
