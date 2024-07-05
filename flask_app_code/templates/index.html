@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Review - Hello Customer</title>
+</head>
+<body>
+    <h1><b>*Product Review - Hello Customer*</b></h1>
+    <p>Welcome to our product review page. Please leave your review below:</p>
+    <form method="POST">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required>
+        <br>
+        <label for="product_name">Product Name:</label>
+        <input type="text" id="product_name" name="product_name" required>
+        <br>
+        <label for="review">Review:</label>
+        <textarea id="review" name="review" required></textarea>
+        <br>
+        <button type="submit">Submit</button>
+    </form>
+    <h2>All Reviews:</h2>
+    <ul>
+        {% for review in reviews %}
+            <li><strong>{{ review[0] }}:</strong> {{ review[1] }} - {{ review[2] }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
