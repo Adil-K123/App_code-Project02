@@ -139,8 +139,10 @@ jobs:
                username: ${{ secrets.WEBSERVER_USER }}
                key: ${{ secrets.ANSIBLE_SSH_KEY }}
                script: |
+                 export PRODUCT_REVIEW_VERSION=${{ env.PRODUCT_REVIEW_VERSION }}
+                 export ENVIRONMENT=${{ env.ENVIRONMENT }}
                  cd /home/ubuntu/app_compose_files/
-                 sudo docker stack deploy --with-registry-auth --detach=false -c docker-compose-${{ env.ENVIRONMENT }}.yaml app_stack
+                 sudo docker stack deploy --with-registry-auth --detach=false -c <(docker compose config -f docker-compose-${{ env.ENVIRONMENT }}.yaml) app_stack
                  cd /home/ubuntu/monitoring_files
                  sudo docker stack deploy --with-registry-auth --detach=false -c /home/ubuntu/monitoring_files/docker-compose.yaml monitoring_stack
 
