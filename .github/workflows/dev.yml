@@ -138,9 +138,8 @@ jobs:
                host: ${{ env.SWARM_LEADER_IP }}
                username: ${{ secrets.WEBSERVER_USER }}
                key: ${{ secrets.ANSIBLE_SSH_KEY }}
+               envs: PRODUCT_REVIEW_VERSION,ENVIRONMENT
                script: |
-                 export PRODUCT_REVIEW_VERSION=${{ env.PRODUCT_REVIEW_VERSION }}
-                 export ENVIRONMENT=${{ env.ENVIRONMENT }}
                  cd /home/ubuntu/app_compose_files/
                  sudo docker compose -f docker-compose-${{ env.ENVIRONMENT }}.yaml config | sudo docker stack deploy --with-registry-auth --detach=false -c /dev/stdin app_stack
                      
