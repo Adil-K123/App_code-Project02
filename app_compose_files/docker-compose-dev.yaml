@@ -3,7 +3,7 @@ services:
   productreview_app:
     image: 767398069045.dkr.ecr.us-east-1.amazonaws.com/product_review:${PRODUCT_REVIEW_VERSION}-${ENVIRONMENT}
     ports:
-      - 8000:8000
+      - "8000:8000"
     env_file:
       - /etc/productreview_app.env
     networks:
@@ -16,7 +16,7 @@ services:
     volumes:
       - /home/ubuntu/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
     ports:
-      - 80:80
+      - "80:80"
     networks:
       - project02
     depends_on:
