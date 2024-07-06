@@ -142,7 +142,7 @@ jobs:
                  export PRODUCT_REVIEW_VERSION=${{ env.PRODUCT_REVIEW_VERSION }}
                  export ENVIRONMENT=${{ env.ENVIRONMENT }}
                  cd /home/ubuntu/app_compose_files/
-                 sudo docker stack deploy --with-registry-auth --detach=false -c <(docker compose -f docker-compose-${{ env.ENVIRONMENT }}.yaml config) app_stack
+                 sudo docker compose -f docker-compose-${{ env.ENVIRONMENT }}.yaml config | sudo docker stack deploy --with-registry-auth --detach=false -c /dev/stdin app_stack
                      
           - name: Deploy docker monitoring_stack 
             env:
