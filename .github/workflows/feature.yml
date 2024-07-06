@@ -1,4 +1,4 @@
-name: "Unit test and deploy to dev servers"
+name: "Unit test and server config test"
 
 on:
     push:
