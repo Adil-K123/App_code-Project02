@@ -140,11 +140,13 @@ jobs:
                host: ${{ env.SWARM_LEADER_IP }}
                username: ${{ secrets.WEBSERVER_USER }}
                key: ${{ secrets.ANSIBLE_SSH_KEY }}
+               allenvs: true
                script: |
+                 printenv
                  export PRODUCT_REVIEW_VERSION=${{ env.PRODUCT_REVIEW_VERSION }}
                  export ENVIRONMENT=${{ env.ENVIRONMENT }}
                  cd /home/ubuntu/app_compose_files/
-                 sudo docker compose -f docker-compose-$ENVIRONMENT.yaml config | sudo docker stack deploy --with-registry-auth --detach=false -c /dev/stdin app_stack
+                 sudo docker stack config -c docker-compose-$ENVIRONMENT.yaml | sudo docker stack deploy --with-registry-auth --detach=false -c /dev/stdin app_stack
                      
           - name: Deploy docker monitoring_stack 
             env:
