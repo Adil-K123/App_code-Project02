@@ -12,7 +12,7 @@
         cache_valid_time: 86400   #one day
   
   tasks:
-    - name: install some required tools 
+    - name: Install required tools 
       tags: docker,curl,ca-certificates
       apt:
         name:
