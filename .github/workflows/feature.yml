@@ -3,7 +3,7 @@ name: "Unit test and server config test"
 on:
     push:
         branches:
-            - pass
+            - feature
 
 env:
   PRODUCT_REVIEW_VERSION: "1.0"
