@@ -1,6 +1,6 @@
 ---
 
-- hosts: all
+- hosts: "{{ env_webserver_group }}"
   become: true
   pre_tasks:
     - name: Update and upgrade packages
