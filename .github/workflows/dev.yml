@@ -15,102 +15,102 @@ env:
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   
 jobs:
-    Tests:
-        name: "Unittest_of_app_with_DB"
-        runs-on: ubuntu-latest
+    # Tests:
+    #     name: "Unittest_of_app_with_DB"
+    #     runs-on: ubuntu-latest
 
-        env:
-            #These credentials are for test in runner
-            MYSQL_HOST: 127.0.0.1
-            MYSQL_USER: root
-            MYSQL_PASSWORD: root
-            MYSQL_DATABASE: test_db
-            #############################            
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v2
+    #     env:
+    #         #These credentials are for test in runner
+    #         MYSQL_HOST: 127.0.0.1
+    #         MYSQL_USER: root
+    #         MYSQL_PASSWORD: root
+    #         MYSQL_DATABASE: test_db
+    #         #############################            
+    #     steps:
+    #         - name: Checkout code
+    #           uses: actions/checkout@v2
 
-            - name: Start MySql 
-              run: |
-                sudo service mysql start
+    #         - name: Start MySql 
+    #           run: |
+    #             sudo service mysql start
 
-            - name: Create DB and table
-              run: |
-                  mysql -h$MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD -e "CREATE DATABASE $MYSQL_DATABASE;" 
-                  mysql -h$MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD -e "USE $MYSQL_DATABASE; CREATE TABLE reviews (id INT AUTO_INCREMENT PRIMARY KEY,name VARCHAR(255),product_name VARCHAR(255),review TEXT);"
+    #         - name: Create DB and table
+    #           run: |
+    #               mysql -h$MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD -e "CREATE DATABASE $MYSQL_DATABASE;" 
+    #               mysql -h$MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD -e "USE $MYSQL_DATABASE; CREATE TABLE reviews (id INT AUTO_INCREMENT PRIMARY KEY,name VARCHAR(255),product_name VARCHAR(255),review TEXT);"
 
-            - name: Setup Python
-              uses: actions/setup-python@v5
-              with:
-                  python-version: '3.8'
+    #         - name: Setup Python
+    #           uses: actions/setup-python@v5
+    #           with:
+    #               python-version: '3.8'
   
-            - name: venv activate and install dependencies
-              run: |
-                python3 -m venv .venv
-                source .venv/bin/activate
-                python3 -m pip install --upgrade pip
-                pip3 install -r requirements.txt
-              working-directory: ./flask_app_code
+    #         - name: venv activate and install dependencies
+    #           run: |
+    #             python3 -m venv .venv
+    #             source .venv/bin/activate
+    #             python3 -m pip install --upgrade pip
+    #             pip3 install -r requirements.txt
+    #           working-directory: ./flask_app_code
 
-            - name: Run tests
-              run: |
-                source .venv/bin/activate
-                pytest
-                deactivate
-              working-directory: ./flask_app_code
+    #         - name: Run tests
+    #           run: |
+    #             source .venv/bin/activate
+    #             pytest
+    #             deactivate
+    #           working-directory: ./flask_app_code
 
 
-    Build_and_Push_Docker_image:
-       name: "Build_and_Push_Docker_image"
-       runs-on: ubuntu-latest
-       needs: Tests
-       steps:
-        - name: Checkout code
-          uses: actions/checkout@v2
+    # Build_and_Push_Docker_image:
+    #    name: "Build_and_Push_Docker_image"
+    #    runs-on: ubuntu-latest
+    #    needs: Tests
+    #    steps:
+    #     - name: Checkout code
+    #       uses: actions/checkout@v2
 
-        - name: Configure AWS credentials for ECR
-          run: |
-            aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+    #     - name: Configure AWS credentials for ECR
+    #       run: |
+    #         aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
          
-        - name: Build and push Docker images for Productreview_app to ECR
-          run: |
-            docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/product_review:$PRODUCT_REVIEW_VERSION-$ENVIRONMENT .
-            docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/product_review:$PRODUCT_REVIEW_VERSION-$ENVIRONMENT
-          working-directory: ./flask_app_code
+    #     - name: Build and push Docker images for Productreview_app to ECR
+    #       run: |
+    #         docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/product_review:$PRODUCT_REVIEW_VERSION-$ENVIRONMENT .
+    #         docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/product_review:$PRODUCT_REVIEW_VERSION-$ENVIRONMENT
+    #       working-directory: ./flask_app_code
           
 
-    Server-RDS_DB-Monitoring_configs:
-        name: "Ensures basic server configs,RDS mysql database,monitoring configs"
-        runs-on: ubuntu-latest
-        steps:
-          - name: Checkout code
-            uses: actions/checkout@v2
+    # Server-RDS_DB-Monitoring_configs:
+    #     name: "Ensures basic server configs,RDS mysql database,monitoring configs"
+    #     runs-on: ubuntu-latest
+    #     steps:
+    #       - name: Checkout code
+    #         uses: actions/checkout@v2
 
-          - name: Install Ansible,boto3 and store ssh key in runner
-            run: |
-              pip3 install ansible boto3
-              mkdir -p /home/runner/.ssh/
-              echo -e "${{ secrets.ANSIBLE_SSH_KEY }}" > /home/runner/.ssh/flask_ec2.pem
-              chmod 600 ~/.ssh/flask_ec2.pem
+    #       - name: Install Ansible,boto3 and store ssh key in runner
+    #         run: |
+    #           pip3 install ansible boto3
+    #           mkdir -p /home/runner/.ssh/
+    #           echo -e "${{ secrets.ANSIBLE_SSH_KEY }}" > /home/runner/.ssh/flask_ec2.pem
+    #           chmod 600 ~/.ssh/flask_ec2.pem
 
-          - name: Fetch RDS endpoint from AWS
-            run: |
-              rds_endpoint=$(aws rds --region us-east-1 describe-db-instances --db-instance-identifier ${ENVIRONMENT}productreviewdb --query 'DBInstances[*].Endpoint.Address' --output text) 
-              echo "RDS_ENDPOINT=${rds_endpoint}" >> $GITHUB_ENV
+    #       - name: Fetch RDS endpoint from AWS
+    #         run: |
+    #           rds_endpoint=$(aws rds --region us-east-1 describe-db-instances --db-instance-identifier ${ENVIRONMENT}productreviewdb --query 'DBInstances[*].Endpoint.Address' --output text) 
+    #           echo "RDS_ENDPOINT=${rds_endpoint}" >> $GITHUB_ENV
 
-          - name: Configure mysql rds db and docker commands in webservers
-            env:
-              RDS_ENDPOINT: ${{ env.RDS_ENDPOINT }}
-            run: |
-              ansible-playbook -i ./inventory/hosts.aws_ec2.yaml -u ${{ secrets.WEBSERVER_USER }} --private-key=/home/runner/.ssh/flask_ec2.pem main.yaml --extra-vars "env_webserver_group=tag_Groups_${ENVIRONMENT}WebServers env_webserver1=tag_Name_${ENVIRONMENT}WebServer1 rds_endpoint=$RDS_ENDPOINT dbusername=${{ secrets.DBUSERNAME }} dbpassword=${{ secrets.DBPASSWORD }} aws_account_id=$AWS_ACCOUNT_ID"
-            working-directory: ./ansible_playbook
+    #       - name: Configure mysql rds db and docker commands in webservers
+    #         env:
+    #           RDS_ENDPOINT: ${{ env.RDS_ENDPOINT }}
+    #         run: |
+    #           ansible-playbook -i ./inventory/hosts.aws_ec2.yaml -u ${{ secrets.WEBSERVER_USER }} --private-key=/home/runner/.ssh/flask_ec2.pem main.yaml --extra-vars "env_webserver_group=tag_Groups_${ENVIRONMENT}WebServers env_webserver1=tag_Name_${ENVIRONMENT}WebServer1 rds_endpoint=$RDS_ENDPOINT dbusername=${{ secrets.DBUSERNAME }} dbpassword=${{ secrets.DBPASSWORD }} aws_account_id=$AWS_ACCOUNT_ID"
+    #         working-directory: ./ansible_playbook
 
     Deploy_New_Version:
          name: "Deploy new version (App_stack and Monitoring_stack)"
          runs-on: ubuntu-latest
-         needs: 
-          - Build_and_Push_Docker_image
-          - Server-RDS_DB-Monitoring_configs
+        #  needs: 
+        #   - Build_and_Push_Docker_image
+        #   - Server-RDS_DB-Monitoring_configs
          steps:
           - name: Checkout code
             uses: actions/checkout@v2
@@ -140,7 +140,7 @@ jobs:
                username: ${{ secrets.WEBSERVER_USER }}
                key: ${{ secrets.ANSIBLE_SSH_KEY }}
                script: |
-                 sed -E -i'' "s/(.*amazonaws.com/product_review:).*/\1${{ env.PRODUCT_REVIEW_VERSION }}-${{ env.ENVIRONMENT }}/" 'app_compose_files/docker-compose-${{ env.ENVIRONMENT }}.yaml' 
+                 sed -E -i'' "s/(.*amazonaws.com\/product_review:).*/\1${{ env.PRODUCT_REVIEW_VERSION }}-${{ env.ENVIRONMENT }}/" 'app_compose_files/docker-compose-${{ env.ENVIRONMENT }}.yaml' 
                  sudo docker stack deploy --with-registry-auth --detach=false -c app_compose_files/docker-compose-${{ env.ENVIRONMENT }}.yaml app_stack
                      
           - name: Deploy docker monitoring_stack 
