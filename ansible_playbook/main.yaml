@@ -1,7 +1,9 @@
 ---
 
-- hosts: all
+- hosts: "{{ env_webserver_group }}"
   become: true
+  vars:
+    env_webserver1: "{{ lookup('vars', 'env_webserver1') | default('') }}"
   pre_tasks:
     - name: Update and upgrade packages
       apt:
@@ -10,13 +12,14 @@
         cache_valid_time: 86400   #one day
   
   tasks:
-    - name: install tools to install docker
+    - name: Install required tools 
       tags: docker,curl,ca-certificates
       apt:
         name:
            - curl
            - ca-certificates
            - unzip 
+           - mysql-client
         state: latest
         update_cache: yes
 
@@ -44,99 +47,6 @@
          "docker-buildx-plugin" not in ansible_facts.packages or
          "docker-compose-plugin" not in ansible_facts.packages
 
-          
-- hosts: "{{ env_webserver1 }}"
-  become: true
-  tasks:
-    - name: Install mysql-client to configure db
-      tags: mysql-client
-      apt:
-        name:
-          - mysql-client
-        state: latest
-        update_cache: yes
-
-    - name: create rds sql database and required table from first webserver
-      tags: sql,db,rds
-      command: |
-         mysql -h{{ rds_endpoint }} -u{{ dbusername }} -p{{ dbpassword }} -e "CREATE DATABASE IF NOT EXISTS product_reviews; USE product_reviews; CREATE TABLE IF NOT EXISTS reviews (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), product_name VARCHAR(255), review TEXT);"
-
-    - name: ensures nginx conf dir exists
-      file: 
-         path: /home/ubuntu/nginx
-         state: directory
-
-    - name: Copy file
-      copy:
-         src: ../nginx/default.conf
-         dest: /home/ubuntu/nginx/default.conf
-
-    - name: Check if Swarm is already initialized
-      shell: docker info --format '{{ "{{ .Swarm.LocalNodeState }}" }}'
-      register: swarm_status
-      changed_when: false
-      
-    - name: Initialize the Docker Swarm if not already initialized
-      command: docker swarm init
-      when: swarm_status.stdout == "inactive"
-
-    - name: Get Join Token for Workers
-      shell: docker swarm join-token -q worker
-      register: worker_join_token
-
-    - name: Set fact for worker join token
-      set_fact:
-        worker_token: "{{ worker_join_token.stdout }}"
-    
-    - name: Create app_compose_files_directory
-      file:
-        path: /home/ubuntu/app_compose_files
-        state: directory
-        mode: '777'
-
-    - name: create grafana_db directory
-      file:
-        path: /home/ubuntu/monitoring_files/grafana_db
-        state: directory
-        mode: '777'
-
-    - name: create prometheus directory
-      file:
-        path: /home/ubuntu/monitoring_files/prometheus
-        state: directory
-        mode: '777'
-
-    - name: copy prometheus yml file
-      copy:
-        src: ../monitoring_files/prometheus/prometheus.yml
-        dest: /home/ubuntu/monitoring_files/prometheus/prometheus.yml
-
-    - name: Copy docker compose
-      copy:
-         src: ../monitoring_files/docker-compose.yaml 
-         dest: /home/ubuntu/monitoring_files/docker-compose.yaml
-
-- hosts: "{{ env_webserver_group }}"
-  become: true
-  vars:
-    env_webserver1: "{{ lookup('vars', 'env_webserver1') | default('') }}"
-
-  tasks:
-
-    - name: worker token sets as fact to all nodes
-      set_fact:
-        worker_token:  "{{ hostvars[groups[env_webserver1][0]].worker_token }}"
-
-    - name: Create environment file
-      tags: environment,db
-      copy:
-         dest: /etc/productreview_app.env
-         content: |
-           MYSQL_HOST={{ rds_endpoint }}
-           MYSQL_USER={{ dbusername }}
-           MYSQL_PASSWORD={{ dbpassword }}
-           MYSQL_DATABASE=product_reviews
-
     - name: Check if AWS CLI is installed
       command: which aws
       register: aws_cli_check
@@ -157,7 +67,7 @@
       args:
         executable: /bin/bash
       when: aws_cli_check.rc != 0
-      
+
     - name: Install aws cli
       shell: |
         if [ -d "/usr/local/aws-cli/v2/current" ]; then
@@ -173,7 +83,78 @@
       tags: aws,ecr
       shell: |
         aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin {{ aws_account_id }}.dkr.ecr.us-east-1.amazonaws.com
-    
+
+    - name: Create environment file
+      tags: environment,db
+      copy:
+         dest: /etc/productreview_app.env
+         content: |
+           MYSQL_HOST={{ rds_endpoint }}
+           MYSQL_USER={{ dbusername }}
+           MYSQL_PASSWORD={{ dbpassword }}
+           MYSQL_DATABASE=product_reviews
+      
+    - name: create rds sql database and required table from first webserver
+      tags: sql,db,rds
+      command: |
+         mysql -h{{ rds_endpoint }} -u{{ dbusername }} -p{{ dbpassword }} -e "CREATE DATABASE IF NOT EXISTS product_reviews; USE product_reviews; CREATE TABLE IF NOT EXISTS reviews (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), product_name VARCHAR(255), review TEXT);"
+      run_once: true
+
+    - name: Set up required directories,also files for nginx,monitoring stack
+      block:
+        - name: create required directories
+          file:
+            path: "{{ item.path }}"
+            state: directory
+            mode: '777'
+          loop:
+            - { path: '/home/ubuntu/app_compose_files' }
+            - { path: '/home/ubuntu/nginx'}
+            - { path: '/home/ubuntu/monitoring_files/grafana_db' }
+            - { path: '/home/ubuntu/monitoring_files/prometheus' }
+
+        - name: Copy nginx conf file
+          copy:
+            src: ../nginx/default.conf
+            dest: /home/ubuntu/nginx/default.conf
+
+        - name: copy prometheus yml file
+          copy:
+            src: ../monitoring_files/prometheus/prometheus.yml
+            dest: /home/ubuntu/monitoring_files/prometheus/prometheus.yml
+
+        - name: Copy docker compose
+          copy:
+            src: ../monitoring_files/docker-compose.yaml
+            dest: /home/ubuntu/monitoring_files/docker-compose.yaml
+
+      when: inventory_hostname in groups[env_webserver1]
+
+    - name: Check if Swarm is already initialized
+      shell: docker info --format '{{ "{{ .Swarm.LocalNodeState }}" }}'
+      register: swarm_status
+      changed_when: false
+      
+    - name: Initialize the Docker Swarm in mgr node if not already initialized
+      command: docker swarm init
+      when: 
+          - swarm_status.stdout == "inactive"
+          - inventory_hostname in groups[env_webserver1]
+
+    - name: Get Join Token for Workers
+      shell: docker swarm join-token -q worker
+      register: worker_join_token
+      when: inventory_hostname in groups[env_webserver1]
+
+    - name: Set fact for worker join token
+      set_fact:
+        worker_token: "{{ worker_join_token.stdout }}"
+      when: inventory_hostname in groups[env_webserver1]
+
+    - name: worker token sets as fact to all nodes
+      set_fact:
+        worker_token:  "{{ hostvars[groups[env_webserver1][0]].worker_token }}"
+ 
     - name: Check Docker Swarm status
       shell: docker info --format '{{ "{{ .Swarm.LocalNodeState }}" }}'
       register: swarm_status

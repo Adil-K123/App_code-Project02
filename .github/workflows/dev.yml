@@ -4,15 +4,15 @@ on:
     push:
         branches:
             - dev
-
+            
 env:
-  PRODUCT_REVIEW_VERSION: "1.0"
+  ENVIRONMENT: dev
+  PRODUCT_REVIEW_VERSION: "2.0"
   AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
   AWS_DEFAULT_REGION: us-east-1
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  ENVIRONMENT: dev
-
+  
 jobs:
     Tests:
         name: "Unittest_of_app_with_DB"
@@ -97,7 +97,7 @@ jobs:
               rds_endpoint=$(aws rds --region us-east-1 describe-db-instances --db-instance-identifier ${ENVIRONMENT}productreviewdb --query 'DBInstances[*].Endpoint.Address' --output text) 
               echo "RDS_ENDPOINT=${rds_endpoint}" >> $GITHUB_ENV
 
-          - name: Configure mysql rds db and docker commands in webservers
+          - name: Configure mysql rds db,install docker,create and copy required directories and files using ansible
             env:
               RDS_ENDPOINT: ${{ env.RDS_ENDPOINT }}
             run: |
@@ -133,20 +133,14 @@ jobs:
           - name: Deploy docker app_stack 
             env:
               SWARM_LEADER_IP: ${{ env.SWARM_LEADER_IP }}
-              PRODUCT_REVIEW_VERSION: ${{ env.PRODUCT_REVIEW_VERSION }}
-              ENVIRONMENT: ${{ env.ENVIRONMENT }}
             uses: appleboy/ssh-action@master
             with:
                host: ${{ env.SWARM_LEADER_IP }}
                username: ${{ secrets.WEBSERVER_USER }}
                key: ${{ secrets.ANSIBLE_SSH_KEY }}
-               allenvs: true
                script: |
-                 printenv
-                 export PRODUCT_REVIEW_VERSION=${{ env.PRODUCT_REVIEW_VERSION }}
-                 export ENVIRONMENT=${{ env.ENVIRONMENT }}
-                 cd /home/ubuntu/app_compose_files/
-                 sudo docker stack config -c docker-compose-$ENVIRONMENT.yaml | sudo docker stack deploy --with-registry-auth --detach=false -c /dev/stdin app_stack
+                 sed -E -i'' "s/(.*amazonaws.com\/product_review:).*/\1${{ env.PRODUCT_REVIEW_VERSION }}-${{ env.ENVIRONMENT }}/" 'app_compose_files/docker-compose-${{ env.ENVIRONMENT }}.yaml' 
+                 sudo docker stack deploy --with-registry-auth --detach=false -c app_compose_files/docker-compose-${{ env.ENVIRONMENT }}.yaml app_stack
                      
           - name: Deploy docker monitoring_stack 
             env:
