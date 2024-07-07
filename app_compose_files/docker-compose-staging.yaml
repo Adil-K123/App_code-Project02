@@ -1,13 +1,17 @@
 version: '3.9'
 services:
   productreview_app:
-    image: 767398069045.dkr.ecr.us-east-1.amazonaws.com/product_review:${PRODUCT_REVIEW_VERSION}-${ENVIRONMENT}
-    ports:
-      - 8000:8000
+    image: 767398069045.dkr.ecr.us-east-1.amazonaws.com/product_review:$PRODUCT_REVIEW_VERSION-$ENVIRONMENT
     env_file:
       - /etc/productreview_app.env
     networks:
       - project02
+    ports:
+      - mode: ingress
+        target: 8000
+        published: 8000
+        protocol: tcp
+    restart: always
     deploy:
       replicas: 2
 
@@ -15,10 +19,14 @@ services:
     image: nginx
     volumes:
       - /home/ubuntu/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
-    ports:
-      - 80:80
     networks:
       - project02
+    ports:
+      - mode: ingress
+        target: 80
+        published: 80
+        protocol: tcp
+    restart: always
     depends_on:
       - productreview_app
     deploy:
