@@ -100,35 +100,34 @@
          mysql -h{{ rds_endpoint }} -u{{ dbusername }} -p{{ dbpassword }} -e "CREATE DATABASE IF NOT EXISTS product_reviews; USE product_reviews; CREATE TABLE IF NOT EXISTS reviews (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), product_name VARCHAR(255), review TEXT);"
       run_once: true
 
-    - name: Set up required directories,also files for nginx,monitoring stack
-      block:
-        - name: create required directories
-          file:
-            path: "{{ item.path }}"
-            state: directory
-            mode: '777'
-          loop:
-            - { path: '/home/ubuntu/app_compose_files' }
-            - { path: '/home/ubuntu/nginx'}
-            - { path: '/home/ubuntu/monitoring_files/grafana_db' }
-            - { path: '/home/ubuntu/monitoring_files/prometheus' }
+    # - name: Set up required directories,also files for nginx,monitoring stack
+    #   block:
+    #     - name: create required directories
+    #       file:
+    #         path: "{{ item.path }}"
+    #         state: directory
+    #         mode: '777'
+    #       loop:
+            #- { path: '/home/ubuntu/nginx'}
+            # - { path: '/home/ubuntu/monitoring_files/grafana_db' }
+            # - { path: '/home/ubuntu/monitoring_files/prometheus' }
 
-        - name: Copy nginx conf file
-          copy:
-            src: ../nginx/default.conf
-            dest: /home/ubuntu/nginx/default.conf
+        # - name: Copy nginx conf file
+        #   copy:
+        #     src: ../nginx/default.conf
+        #     dest: /home/ubuntu/nginx/default.conf
 
-        - name: copy prometheus yml file
-          copy:
-            src: ../monitoring_files/prometheus/prometheus.yml
-            dest: /home/ubuntu/monitoring_files/prometheus/prometheus.yml
+        # - name: copy prometheus yml file
+        #   copy:
+        #     src: ../monitoring_files/prometheus/prometheus.yml
+        #     dest: /home/ubuntu/monitoring_files/prometheus/prometheus.yml
 
-        - name: Copy docker compose
-          copy:
-            src: ../monitoring_files/docker-compose.yaml
-            dest: /home/ubuntu/monitoring_files/docker-compose.yaml
+        # - name: Copy docker compose
+        #   copy:
+        #     src: ../monitoring_files/docker-compose.yaml
+        #     dest: /home/ubuntu/monitoring_files/docker-compose.yaml
 
-      when: inventory_hostname in groups[env_webserver1]
+      # when: inventory_hostname in groups[env_webserver1]
 
     - name: Check if Swarm is already initialized
       shell: docker info --format '{{ "{{ .Swarm.LocalNodeState }}" }}'
