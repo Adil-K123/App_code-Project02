@@ -4,10 +4,10 @@ on:
     push:
         branches:
             - dev
-            
+
 env:
   ENVIRONMENT: dev
-  PRODUCT_REVIEW_VERSION: "2.0"
+  PRODUCT_REVIEW_VERSION: "1.0"
   AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
   AWS_DEFAULT_REGION: us-east-1
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -127,7 +127,7 @@ jobs:
              host: ${{ env.SWARM_LEADER_IP }}
              username: ${{ secrets.WEBSERVER_USER }}
              key: ${{ secrets.ANSIBLE_SSH_KEY }}
-             source: "app_compose_files/docker-compose-${{ env.ENVIRONMENT }}.yaml"
+             source: "app_compose_files/docker-compose-${{ env.ENVIRONMENT }}.yaml,monitoring_files/docker-compose.yaml,monitoring_files/grafana_db/*,monitoring_files/prometheus/*,nginx/*"
              target: /home/ubuntu/
 
           - name: Deploy docker app_stack 
