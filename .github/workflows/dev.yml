@@ -127,7 +127,7 @@ jobs:
              host: ${{ env.SWARM_LEADER_IP }}
              username: ${{ secrets.WEBSERVER_USER }}
              key: ${{ secrets.ANSIBLE_SSH_KEY }}
-             source: "app_compose_files/docker-compose-${{ env.ENVIRONMENT }}.yaml,monitoring_files/docker-compose.yaml,monitoring_files/grafana_db/*,monitoring_files/prometheus/*,nginx/*"
+             source: "app_compose_files/docker-compose-${{ env.ENVIRONMENT }}.yaml,monitoring_files/docker-compose.yaml,monitoring_files/prometheus/*,nginx/*"
              target: /home/ubuntu/
 
           - name: Deploy docker app_stack 
@@ -152,5 +152,6 @@ jobs:
               key: ${{ secrets.ANSIBLE_SSH_KEY }}
               script: |
                 cd /home/ubuntu/monitoring_files
+                mkdir -p grafana_db && chmod 777 grafana_db
                 sudo docker stack deploy --with-registry-auth --detach=false -c /home/ubuntu/monitoring_files/docker-compose.yaml monitoring_stack
          
