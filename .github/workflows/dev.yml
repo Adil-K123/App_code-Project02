@@ -153,5 +153,6 @@ jobs:
               script: |
                 cd /home/ubuntu/monitoring_files
                 mkdir -p grafana_db && chmod 777 grafana_db
+                chmod 777 prometheus && chmod 777 prometheus/prometheus.yml
                 sudo docker stack deploy --with-registry-auth --detach=false -c /home/ubuntu/monitoring_files/docker-compose.yaml monitoring_stack
          
