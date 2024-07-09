@@ -1,7 +1,7 @@
 version: '3.9'
 services:
   productreview_app:
-    image: 767398069045.dkr.ecr.us-east-1.amazonaws.com/product_review:$PRODUCT_REVIEW_VERSION-$ENVIRONMENT
+    image: $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/product_review:$PRODUCT_REVIEW_VERSION-$ENVIRONMENT
     env_file:
       - /etc/productreview_app.env
     networks:
