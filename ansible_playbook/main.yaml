@@ -1,9 +1,9 @@
 ---
 
-- hosts: "{{ env_webserver_group }}"
+- hosts: "tag_Groups_'{{ lookup('ansible.builtin.env', 'ENVIRONMENT') }}'WebServers"                                                 #"{{ env_webserver_group }}"
   become: true
   vars:
-    env_webserver1: "{{ lookup('vars', 'env_webserver1') | default('') }}"
+    env_webserver1: tag_Name_'{{ lookup('ansible.builtin.env', 'ENVIRONMENT') }}'WebServer1
   pre_tasks:
     - name: Update and upgrade packages
       apt:
