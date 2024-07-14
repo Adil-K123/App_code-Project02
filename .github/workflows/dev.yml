@@ -60,27 +60,28 @@ jobs:
               working-directory: ./flask_app_code
 
 
-    Build_and_Push_Docker_image:
-       name: "Build_and_Push_Docker_image"
-       runs-on: ubuntu-latest
-       needs: Tests
-       steps:
-        - name: Checkout code
-          uses: actions/checkout@v3
+    # Build_and_Push_Docker_image:
+    #    name: "Build_and_Push_Docker_image"
+    #    runs-on: ubuntu-latest
+    #    needs: Tests
+    #    steps:
+    #     - name: Checkout code
+    #       uses: actions/checkout@v3
 
-        - name: Configure AWS credentials
-          uses: aws-actions/configure-aws-credentials@v4
-          with:
-            aws-region: ${{ env.AWS_DEFAULT_REGION }}
+    #     - name: Configure AWS credentials
+    #       uses: aws-actions/configure-aws-credentials@v4
+    #       with:
+    #         aws-region: ${{ env.AWS_DEFAULT_REGION }}
     
-        - name: Login to Amazon ECR Private
-          id: login-ecr
-          uses: aws-actions/amazon-ecr-login@v2
+    #     - name: Login to Amazon ECR Private
+    #       id: login-ecr
+    #       uses: aws-actions/amazon-ecr-login@v2
          
-        - name: Build and push Docker images for Productreview_app to ECR
-          run: |
-              ./docker_build_push.sh
-          working-directory: ./flask_app_code
+    #     - name: Build and push Docker images for Productreview_app to ECR
+    #       run: |
+    #           chmod +x docker_build_push.sh
+    #           ./docker_build_push.sh
+    #       working-directory: ./flask_app_code
           
 
     Server-RDS_DB-Monitoring_configs:
@@ -113,62 +114,62 @@ jobs:
               --extra-vars "rds_endpoint=$RDS_ENDPOINT dbusername=${{ secrets.DBUSERNAME }} dbpassword=${{ secrets.DBPASSWORD }} aws_account_id=$AWS_ACCOUNT_ID"
             working-directory: ./ansible_playbook
 
-    Deploy_New_Version:
-         name: "Deploy new version (App_stack and Monitoring_stack)"
-         runs-on: ubuntu-latest
-         needs: 
-          - Build_and_Push_Docker_image
-          - Server-RDS_DB-Monitoring_configs
-         steps:
-          - name: Checkout code
-            uses: actions/checkout@v2
+    # Deploy_New_Version:
+    #      name: "Deploy new version (App_stack and Monitoring_stack)"
+    #      runs-on: ubuntu-latest
+    #      needs: 
+    #       - Build_and_Push_Docker_image
+    #       - Server-RDS_DB-Monitoring_configs
+    #      steps:
+    #       - name: Checkout code
+    #         uses: actions/checkout@v2
 
-          - name: Set Git commit id as Product review version env
-            id: set_version
-            run: echo "PRODUCT_REVIEW_VERSION=$(git log -1 --pretty=%h)" >> $GITHUB_ENV
+    #       - name: Set Git commit id as Product review version env
+    #         id: set_version
+    #         run: echo "PRODUCT_REVIEW_VERSION=$(git log -1 --pretty=%h)" >> $GITHUB_ENV
 
-          - name: Fetch Docker swarm leader ip and set as env variable
-            run: |
-                swarm_leader_ip=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=${ENVIRONMENT}WebServer1" --query "Reservations[0].Instances[0].PublicIpAddress" --output text)
-                echo "SWARM_LEADER_IP=${swarm_leader_ip}" >> $GITHUB_ENV
+    #       - name: Fetch Docker swarm leader ip and set as env variable
+    #         run: |
+    #             swarm_leader_ip=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=${ENVIRONMENT}WebServer1" --query "Reservations[0].Instances[0].PublicIpAddress" --output text)
+    #             echo "SWARM_LEADER_IP=${swarm_leader_ip}" >> $GITHUB_ENV
           
-          - name: Copy appstack compose file via ssh 
-            env:
-              SWARM_LEADER_IP: ${{ env.SWARM_LEADER_IP }}
-            uses: appleboy/scp-action@v0.1.7
-            with:
-             host: ${{ env.SWARM_LEADER_IP }}
-             username: ${{ secrets.WEBSERVER_USER }}
-             key: ${{ secrets.ANSIBLE_SSH_KEY }}
-             source: "app_compose_files/docker-compose-${{ env.ENVIRONMENT }}.yaml,app_compose_files/app_deploy.sh,monitoring_files/docker-compose.yaml,monitoring_files/monitoring_deploy.sh,monitoring_files/prometheus/*,nginx/*"
-             target: /home/ubuntu/
+    #       - name: Copy appstack compose file via ssh 
+    #         env:
+    #           SWARM_LEADER_IP: ${{ env.SWARM_LEADER_IP }}
+    #         uses: appleboy/scp-action@v0.1.7
+    #         with:
+    #          host: ${{ env.SWARM_LEADER_IP }}
+    #          username: ${{ secrets.WEBSERVER_USER }}
+    #          key: ${{ secrets.ANSIBLE_SSH_KEY }}
+    #          source: "app_compose_files/docker-compose-${{ env.ENVIRONMENT }}.yaml,app_compose_files/app_deploy.sh,monitoring_files/docker-compose.yaml,monitoring_files/monitoring_deploy.sh,monitoring_files/prometheus/*,nginx/*"
+    #          target: /home/ubuntu/
 
-          - name: Deploy docker app_stack 
-            env:
-              SWARM_LEADER_IP: ${{ env.SWARM_LEADER_IP }}
-              PRODUCT_REVIEW_VERSION: ${{ env.PRODUCT_REVIEW_VERSION }}
-            uses: appleboy/ssh-action@master
-            with:
-               host: ${{ env.SWARM_LEADER_IP }}
-               username: ${{ secrets.WEBSERVER_USER }}
-               key: ${{ secrets.ANSIBLE_SSH_KEY }}
-               script: |
-                  chmod +x app_compose_files/app_deploy.sh
-                  AWS_ACCOUNT_ID="${{ env.AWS_ACCOUNT_ID }}" \
-                  ENVIRONMENT="${{ env.ENVIRONMENT }}" \
-                  PRODUCT_REVIEW_VERSION="${{ env.PRODUCT_REVIEW_VERSION }}" \
-                  ./app_compose_files/app_deploy.sh
+    #       - name: Deploy docker app_stack 
+    #         env:
+    #           SWARM_LEADER_IP: ${{ env.SWARM_LEADER_IP }}
+    #           PRODUCT_REVIEW_VERSION: ${{ env.PRODUCT_REVIEW_VERSION }}
+    #         uses: appleboy/ssh-action@master
+    #         with:
+    #            host: ${{ env.SWARM_LEADER_IP }}
+    #            username: ${{ secrets.WEBSERVER_USER }}
+    #            key: ${{ secrets.ANSIBLE_SSH_KEY }}
+    #            script: |
+    #               chmod +x app_compose_files/app_deploy.sh
+    #               AWS_ACCOUNT_ID="${{ env.AWS_ACCOUNT_ID }}" \
+    #               ENVIRONMENT="${{ env.ENVIRONMENT }}" \
+    #               PRODUCT_REVIEW_VERSION="${{ env.PRODUCT_REVIEW_VERSION }}" \
+    #               ./app_compose_files/app_deploy.sh
 
                      
-          - name: Deploy docker monitoring_stack 
-            env:
-              SWARM_LEADER_IP: ${{ env.SWARM_LEADER_IP }}
-            uses: appleboy/ssh-action@master
-            with:
-              host: ${{ env.SWARM_LEADER_IP }}
-              username: ${{ secrets.WEBSERVER_USER }}
-              key: ${{ secrets.ANSIBLE_SSH_KEY }}
-              script: |
-                 chmod +x monitoring_files/monitoring_deploy.sh
-                 ./monitoring_files/monitoring_deploy.sh
+    #       - name: Deploy docker monitoring_stack 
+    #         env:
+    #           SWARM_LEADER_IP: ${{ env.SWARM_LEADER_IP }}
+    #         uses: appleboy/ssh-action@master
+    #         with:
+    #           host: ${{ env.SWARM_LEADER_IP }}
+    #           username: ${{ secrets.WEBSERVER_USER }}
+    #           key: ${{ secrets.ANSIBLE_SSH_KEY }}
+    #           script: |
+    #              chmod +x monitoring_files/monitoring_deploy.sh
+    #              ./monitoring_files/monitoring_deploy.sh
          

@@ -3,7 +3,7 @@
 - hosts: "tag_Groups_{{ lookup('ansible.builtin.env', 'ENVIRONMENT') }}WebServers"                                                 #"{{ env_webserver_group }}"
   become: true
   vars:
-    env_webserver1: tag_Name_'{{ lookup('ansible.builtin.env', 'ENVIRONMENT') }}'WebServer1
+    env_webserver1: tag_Name_{{ lookup('ansible.builtin.env', 'ENVIRONMENT') }}WebServer1
   pre_tasks:
     - name: Update and upgrade packages
       apt:
@@ -20,6 +20,7 @@
            - ca-certificates
            - unzip 
            - mysql-client
+           - amazon-ecr-credential-helper
         state: latest
         update_cache: yes
 
@@ -79,10 +80,15 @@
         executable: /bin/bash
       when: aws_cli_check.rc != 0
 
-    - name: Aws ecr login
-      tags: aws,ecr
-      shell: |
-        aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin {{ aws_account_id }}.dkr.ecr.us-east-1.amazonaws.com
+    - name: Copy Docker config.json with ECR credsStore
+      copy:
+        dest: /root/.docker/config.json
+        content: |
+          {
+            "credsStore": "ecr-login"
+          }
+      # shell: |
+      #   aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin {{ aws_account_id }}.dkr.ecr.us-east-1.amazonaws.com
 
     - name: Create environment file in all nodes
       tags: environment,db
