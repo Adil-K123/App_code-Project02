@@ -4,6 +4,7 @@ on:
     push:
         branches:
             - dev
+            - feature
 
 env:
   ENVIRONMENT: dev
@@ -127,7 +128,7 @@ jobs:
              host: ${{ env.SWARM_LEADER_IP }}
              username: ${{ secrets.WEBSERVER_USER }}
              key: ${{ secrets.ANSIBLE_SSH_KEY }}
-             source: "app_compose_files/docker-compose-${{ env.ENVIRONMENT }}.yaml,monitoring_files/docker-compose.yaml,monitoring_files/prometheus/*,nginx/*"
+             source: "app_compose_files/docker-compose-${{ env.ENVIRONMENT }}.yaml,app_compose_files/app_deploy.sh,monitoring_files/docker-compose.yaml,monitoring_files/prometheus/*,nginx/*"
              target: /home/ubuntu/
 
           - name: Deploy docker app_stack 
@@ -139,9 +140,15 @@ jobs:
                username: ${{ secrets.WEBSERVER_USER }}
                key: ${{ secrets.ANSIBLE_SSH_KEY }}
                script: |
-                 sed -E -i 's/image: [^ ]+\.dkr\.ecr/image: ${{ env.AWS_ACCOUNT_ID }}\.dkr\.ecr/' 'app_compose_files/docker-compose-${{ env.ENVIRONMENT }}.yaml'
-                 sed -E -i'' "s/(.*amazonaws.com\/product_review:).*/\1${{ env.PRODUCT_REVIEW_VERSION }}-${{ env.ENVIRONMENT }}/" 'app_compose_files/docker-compose-${{ env.ENVIRONMENT }}.yaml' 
-                 sudo docker stack deploy --with-registry-auth --detach=false -c app_compose_files/docker-compose-${{ env.ENVIRONMENT }}.yaml app_stack
+                  AWS_ACCOUNT_ID="${{ env.AWS_ACCOUNT_ID }}" \
+                  ENVIRONMENT="${{ env.ENVIRONMENT }}" \
+                  PRODUCT_REVIEW_VERSION="${{ env.PRODUCT_REVIEW_VERSION }}" \
+                  ./app_compose_files/app_deploy.sh
+
+
+      #  sed -E -i 's/image: [^ ]+\.dkr\.ecr/image: ${{ env.AWS_ACCOUNT_ID }}\.dkr\.ecr/' 'app_compose_files/docker-compose-${{ env.ENVIRONMENT }}.yaml'
+      #  sed -E -i'' "s/(.*amazonaws.com\/product_review:).*/\1${{ env.PRODUCT_REVIEW_VERSION }}-${{ env.ENVIRONMENT }}/" 'app_compose_files/docker-compose-${{ env.ENVIRONMENT }}.yaml' 
+      #  sudo docker stack deploy --with-registry-auth --detach=false -c app_compose_files/docker-compose-${{ env.ENVIRONMENT }}.yaml app_stack
                      
           - name: Deploy docker monitoring_stack 
             env:
