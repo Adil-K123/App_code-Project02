@@ -145,12 +145,11 @@ jobs:
                username: ${{ secrets.WEBSERVER_USER }}
                key: ${{ secrets.ANSIBLE_SSH_KEY }}
                script: |
-                  cd app_compose_files
                   chmod +x app_deploy.sh
                   AWS_ACCOUNT_ID="${{ env.AWS_ACCOUNT_ID }}" \
                   ENVIRONMENT="${{ env.ENVIRONMENT }}" \
                   PRODUCT_REVIEW_VERSION="${{ env.PRODUCT_REVIEW_VERSION }}" \
-                  ./app_deploy.sh
+                  ./app_compose_files/app_deploy.sh
 
 
       #  sed -E -i 's/image: [^ ]+\.dkr\.ecr/image: ${{ env.AWS_ACCOUNT_ID }}\.dkr\.ecr/' 'app_compose_files/docker-compose-${{ env.ENVIRONMENT }}.yaml'

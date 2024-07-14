@@ -1,4 +1,4 @@
-#!bin/bash
+#!/bin/bash
 
 #Set the latest image name and tag in the Docker compose file
 sed -E -i 's/image: [^ ]+\.dkr\.ecr/image: $AWS_ACCOUNT_ID\.dkr\.ecr/' app_compose_files/docker-compose-$ENVIRONMENT.yaml
