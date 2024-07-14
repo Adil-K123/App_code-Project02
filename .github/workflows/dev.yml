@@ -8,7 +8,6 @@ on:
 
 env:
   ENVIRONMENT: dev
-  #PRODUCT_REVIEW_VERSION: "2.0"
   AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
   AWS_DEFAULT_REGION: us-east-1
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -30,20 +29,15 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v2
 
-            - name: Start MySql 
-              run: |
-                sudo service mysql start
+            # - name: Start MySql 
+            #   run: |
+            #     sudo service mysql start
 
             - name: Create DB and table
               run: |
                   mysql -h$MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD -e "CREATE DATABASE $MYSQL_DATABASE;" 
                   mysql -h$MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD -e "USE $MYSQL_DATABASE; CREATE TABLE reviews (id INT AUTO_INCREMENT PRIMARY KEY,name VARCHAR(255),product_name VARCHAR(255),review TEXT);"
 
-            # - name: Setup Python
-            #   uses: actions/setup-python@v5
-            #   with:
-            #       python-version: '3.8'
-  
             - name: venv activate and install dependencies
               run: |
                 python3 -m venv .venv
@@ -60,28 +54,28 @@ jobs:
               working-directory: ./flask_app_code
 
 
-    # Build_and_Push_Docker_image:
-    #    name: "Build_and_Push_Docker_image"
-    #    runs-on: ubuntu-latest
-    #    needs: Tests
-    #    steps:
-    #     - name: Checkout code
-    #       uses: actions/checkout@v3
+    Build_and_Push_Docker_image:
+       name: "Build_and_Push_Docker_image"
+       runs-on: ubuntu-latest
+       needs: Tests
+       steps:
+        - name: Checkout code
+          uses: actions/checkout@v3
 
-    #     - name: Configure AWS credentials
-    #       uses: aws-actions/configure-aws-credentials@v4
-    #       with:
-    #         aws-region: ${{ env.AWS_DEFAULT_REGION }}
+        - name: Configure AWS credentials
+          uses: aws-actions/configure-aws-credentials@v4
+          with:
+            aws-region: ${{ env.AWS_DEFAULT_REGION }}
     
-    #     - name: Login to Amazon ECR Private
-    #       id: login-ecr
-    #       uses: aws-actions/amazon-ecr-login@v2
+        - name: Login to Amazon ECR Private
+          id: login-ecr
+          uses: aws-actions/amazon-ecr-login@v2
          
-    #     - name: Build and push Docker images for Productreview_app to ECR
-    #       run: |
-    #           chmod +x docker_build_push.sh
-    #           ./docker_build_push.sh
-    #       working-directory: ./flask_app_code
+        - name: Build and push Docker images for Productreview_app to ECR
+          run: |
+              chmod +x docker_build_push.sh
+              ./docker_build_push.sh
+          working-directory: ./flask_app_code
           
 
     Server-RDS_DB-Monitoring_configs:

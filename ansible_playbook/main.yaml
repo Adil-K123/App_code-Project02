@@ -19,7 +19,6 @@
         name:
            - curl
            - ca-certificates
-           - unzip 
            - mysql-client
            - amazon-ecr-credential-helper
         state: latest
