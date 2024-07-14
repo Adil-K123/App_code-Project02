@@ -149,7 +149,7 @@ jobs:
                   AWS_ACCOUNT_ID="${{ env.AWS_ACCOUNT_ID }}" \
                   ENVIRONMENT="${{ env.ENVIRONMENT }}" \
                   PRODUCT_REVIEW_VERSION="${{ env.PRODUCT_REVIEW_VERSION }}" \
-                  ./app_compose_files/app_deploy.sh
+                  app_compose_files/app_deploy.sh
 
 
       #  sed -E -i 's/image: [^ ]+\.dkr\.ecr/image: ${{ env.AWS_ACCOUNT_ID }}\.dkr\.ecr/' 'app_compose_files/docker-compose-${{ env.ENVIRONMENT }}.yaml'
