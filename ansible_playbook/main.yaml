@@ -4,7 +4,7 @@
   become: true
   vars:
     env_webserver1: tag_Name_{{ lookup('ansible.builtin.env', 'ENVIRONMENT') }}WebServer1
-    rds_endpoint: {{ lookup('ansible.builtin.env', 'RDS_ENDPOINT') }}
+    rds_endpoint: '{{ lookup('ansible.builtin.env', 'RDS_ENDPOINT') }}'
   pre_tasks:
     - name: Update and upgrade packages
       apt:
