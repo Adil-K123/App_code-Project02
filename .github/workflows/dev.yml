@@ -145,7 +145,7 @@ jobs:
                username: ${{ secrets.WEBSERVER_USER }}
                key: ${{ secrets.ANSIBLE_SSH_KEY }}
                script: |
-                  chmod +x app_deploy.sh
+                  chmod +x app_compose_files/app_deploy.sh
                   AWS_ACCOUNT_ID="${{ env.AWS_ACCOUNT_ID }}" \
                   ENVIRONMENT="${{ env.ENVIRONMENT }}" \
                   PRODUCT_REVIEW_VERSION="${{ env.PRODUCT_REVIEW_VERSION }}" \
