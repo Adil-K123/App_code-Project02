@@ -111,7 +111,7 @@ jobs:
             run: |
               ansible-playbook -i ./inventory/hosts.aws_ec2.yaml \
               -u ${{ secrets.WEBSERVER_USER }} --private-key=/home/runner/.ssh/flask_ec2.pem main.yaml \
-              --extra-vars "rds_endpoint=$RDS_ENDPOINT dbusername=${{ secrets.DBUSERNAME }} dbpassword=${{ secrets.DBPASSWORD }} aws_account_id=$AWS_ACCOUNT_ID"
+              --extra-vars "dbusername=${{ secrets.DBUSERNAME }} dbpassword=${{ secrets.DBPASSWORD }}"
             working-directory: ./ansible_playbook
 
     # Deploy_New_Version:

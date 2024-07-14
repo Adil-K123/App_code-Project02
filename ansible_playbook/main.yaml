@@ -4,6 +4,7 @@
   become: true
   vars:
     env_webserver1: tag_Name_{{ lookup('ansible.builtin.env', 'ENVIRONMENT') }}WebServer1
+    rds_endpoint: {{ lookup('ansible.builtin.env', 'RDS_ENDPOINT') }}
   pre_tasks:
     - name: Update and upgrade packages
       apt:
@@ -48,38 +49,6 @@
          "docker-buildx-plugin" not in ansible_facts.packages or
          "docker-compose-plugin" not in ansible_facts.packages
 
-    - name: Check if AWS CLI is installed
-      command: which aws
-      register: aws_cli_check
-      ignore_errors: yes
-
-    - name: Download aws cli zip file
-      shell: |
-        curl -o /tmp/awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
-      args:
-        executable: /bin/bash
-      when: aws_cli_check.rc != 0
-      
-    - name: Unzip aws cli
-      shell: |
-          if [ ! -d "/tmp/aws" ]; then
-            unzip /tmp/awscliv2.zip -d /tmp/
-          fi
-      args:
-        executable: /bin/bash
-      when: aws_cli_check.rc != 0
-
-    - name: Install aws cli
-      shell: |
-        if [ -d "/usr/local/aws-cli/v2/current" ]; then
-          /tmp/aws/install --update
-        else
-          /tmp/aws/install
-        fi
-      args:
-        executable: /bin/bash
-      when: aws_cli_check.rc != 0
-
     - name: Copy Docker config.json with ECR credsStore
       copy:
         dest: /root/.docker/config.json
@@ -87,15 +56,13 @@
           {
             "credsStore": "ecr-login"
           }
-      # shell: |
-      #   aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin {{ aws_account_id }}.dkr.ecr.us-east-1.amazonaws.com
-
+    
     - name: Create environment file in all nodes
       tags: environment,db
       copy:
          dest: /etc/productreview_app.env
          content: |
-           MYSQL_HOST={{ rds_endpoint }}
+           MYSQL_HOST={{ rds_endpoint }}               
            MYSQL_USER={{ dbusername }}
            MYSQL_PASSWORD={{ dbpassword }}
            MYSQL_DATABASE=product_reviews
@@ -129,7 +96,7 @@
 
     - name: worker token sets as fact to all nodes
       set_fact:
-        worker_token:  "{{ hostvars[groups[env_webserver1][0]].worker_token }}"
+        worker_token: "{{ hostvars[groups[env_webserver1][0]].worker_token }}"
  
     - name: Check Docker Swarm status
       shell: docker info --format '{{ "{{ .Swarm.LocalNodeState }}" }}'
