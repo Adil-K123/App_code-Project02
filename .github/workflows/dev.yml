@@ -115,6 +115,10 @@ jobs:
           - name: Checkout code
             uses: actions/checkout@v2
 
+          - name: Set Git commit id as Product review version env
+            id: set_version
+            run: echo "PRODUCT_REVIEW_VERSION=$(git log -1 --pretty=%h)" >> $GITHUB_ENV
+
           - name: Fetch Docker swarm leader ip and set as env variable
             run: |
                 swarm_leader_ip=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=${ENVIRONMENT}WebServer1" --query "Reservations[0].Instances[0].PublicIpAddress" --output text)
@@ -134,6 +138,7 @@ jobs:
           - name: Deploy docker app_stack 
             env:
               SWARM_LEADER_IP: ${{ env.SWARM_LEADER_IP }}
+              PRODUCT_REVIEW_VERSION: ${{ env.PRODUCT_REVIEW_VERSION }}
             uses: appleboy/ssh-action@master
             with:
                host: ${{ env.SWARM_LEADER_IP }}
@@ -143,7 +148,7 @@ jobs:
                   chmod +x app_deploy.sh
                   AWS_ACCOUNT_ID="${{ env.AWS_ACCOUNT_ID }}" \
                   ENVIRONMENT="${{ env.ENVIRONMENT }}" \
-                  PRODUCT_REVIEW_VERSION="$(git log -1 --pretty=%h)" \
+                  PRODUCT_REVIEW_VERSION="${{ env.PRODUCT_REVIEW_VERSION }}" \
                   ./app_compose_files/app_deploy.sh
 
 
