@@ -6,13 +6,12 @@ on:
             - prod
 
 env:
-  PRODUCT_REVIEW_VERSION: "1.0"
+  ENVIRONMENT: prod
   AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
   AWS_DEFAULT_REGION: us-east-1
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  ENVIRONMENT: prod
-
+  
 jobs:
     Tests:
         name: "Unittest_of_app_with_DB"
@@ -29,20 +28,12 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v2
 
-            - name: Start MySql 
+            - name: Create Test DB and table
               run: |
-                sudo service mysql start
-
-            - name: Create DB and table
-              run: |
+                  sudo service mysql start
                   mysql -h$MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD -e "CREATE DATABASE $MYSQL_DATABASE;" 
                   mysql -h$MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD -e "USE $MYSQL_DATABASE; CREATE TABLE reviews (id INT AUTO_INCREMENT PRIMARY KEY,name VARCHAR(255),product_name VARCHAR(255),review TEXT);"
 
-            - name: Setup Python
-              uses: actions/setup-python@v5
-              with:
-                  python-version: '3.8'
-  
             - name: venv activate and install dependencies
               run: |
                 python3 -m venv .venv
@@ -65,16 +56,21 @@ jobs:
        needs: Tests
        steps:
         - name: Checkout code
-          uses: actions/checkout@v2
+          uses: actions/checkout@v3
 
-        - name: Configure AWS credentials for ECR
-          run: |
-            aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+        - name: Configure AWS credentials
+          uses: aws-actions/configure-aws-credentials@v4
+          with:
+            aws-region: ${{ env.AWS_DEFAULT_REGION }}
+    
+        - name: Login to Amazon ECR Private
+          id: login-ecr
+          uses: aws-actions/amazon-ecr-login@v2
          
         - name: Build and push Docker images for Productreview_app to ECR
           run: |
-            docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/product_review:$PRODUCT_REVIEW_VERSION-$ENVIRONMENT .
-            docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/product_review:$PRODUCT_REVIEW_VERSION-$ENVIRONMENT
+              chmod +x docker_build_push.sh
+              ./docker_build_push.sh
           working-directory: ./flask_app_code
           
 
@@ -94,14 +90,18 @@ jobs:
 
           - name: Fetch RDS endpoint from AWS
             run: |
-              rds_endpoint=$(aws rds --region us-east-1 describe-db-instances --db-instance-identifier ${ENVIRONMENT}productreviewdb --query 'DBInstances[*].Endpoint.Address' --output text) 
+              rds_endpoint=$(aws rds --region us-east-1 describe-db-instances \
+              --db-instance-identifier ${ENVIRONMENT}productreviewdb \
+              --query 'DBInstances[*].Endpoint.Address' --output text) 
               echo "RDS_ENDPOINT=${rds_endpoint}" >> $GITHUB_ENV
 
-          - name: Configure mysql rds db and docker commands in webservers
+          - name: Configure mysql rds db,install docker,create and copy required directories and files using ansible
             env:
               RDS_ENDPOINT: ${{ env.RDS_ENDPOINT }}
             run: |
-              ansible-playbook -i ./inventory/hosts.aws_ec2.yaml -u ${{ secrets.WEBSERVER_USER }} --private-key=/home/runner/.ssh/flask_ec2.pem main.yaml --extra-vars "env_webserver_group=tag_Groups_${ENVIRONMENT}WebServers env_webserver1=tag_Name_${ENVIRONMENT}WebServer1 rds_endpoint=$RDS_ENDPOINT dbusername=${{ secrets.DBUSERNAME }} dbpassword=${{ secrets.DBPASSWORD }} aws_account_id=$AWS_ACCOUNT_ID"
+              ansible-playbook -i ./inventory/hosts.aws_ec2.yaml \
+              -u ${{ secrets.WEBSERVER_USER }} --private-key=/home/runner/.ssh/flask_ec2.pem main.yaml \
+              --extra-vars "dbusername=${{ secrets.DBUSERNAME }} dbpassword=${{ secrets.DBPASSWORD }}"
             working-directory: ./ansible_playbook
 
     Deploy_New_Version:
@@ -114,9 +114,15 @@ jobs:
           - name: Checkout code
             uses: actions/checkout@v2
 
+          - name: Set Git commit id as Product review version env variable
+            id: set_version
+            run: echo "PRODUCT_REVIEW_VERSION=$(git log -1 --pretty=%h)" >> $GITHUB_ENV
+
           - name: Fetch Docker swarm leader ip and set as env variable
             run: |
-                swarm_leader_ip=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=${ENVIRONMENT}WebServer1" --query "Reservations[0].Instances[0].PublicIpAddress" --output text)
+                swarm_leader_ip=$(aws ec2 describe-instances \
+                --filters "Name=tag:Name,Values=${ENVIRONMENT}WebServer1" \
+                --query "Reservations[0].Instances[0].PublicIpAddress" --output text)
                 echo "SWARM_LEADER_IP=${swarm_leader_ip}" >> $GITHUB_ENV
           
           - name: Copy appstack compose file via ssh 
@@ -127,21 +133,35 @@ jobs:
              host: ${{ env.SWARM_LEADER_IP }}
              username: ${{ secrets.WEBSERVER_USER }}
              key: ${{ secrets.ANSIBLE_SSH_KEY }}
-             source: "app_compose_files/docker-compose-${{ env.ENVIRONMENT }}.yaml"
+             source: "app_compose_files/docker-compose-${{ env.ENVIRONMENT }}.yaml,app_compose_files/app_deploy.sh,monitoring_files/docker-compose.yaml,monitoring_files/monitoring_deploy.sh,monitoring_files/prometheus/*,nginx/*"
              target: /home/ubuntu/
 
-          - name: Deploy docker app_stack and monitoring_stack
+          - name: Deploy docker app_stack 
             env:
               SWARM_LEADER_IP: ${{ env.SWARM_LEADER_IP }}
+              PRODUCT_REVIEW_VERSION: ${{ env.PRODUCT_REVIEW_VERSION }}
             uses: appleboy/ssh-action@master
             with:
                host: ${{ env.SWARM_LEADER_IP }}
                username: ${{ secrets.WEBSERVER_USER }}
                key: ${{ secrets.ANSIBLE_SSH_KEY }}
                script: |
-                 cd /home/ubuntu/app_compose_files/
-                 sudo docker stack deploy --with-registry-auth --detach=false -c docker-compose-${{ env.ENVIRONMENT }}.yaml app_stack
-                 cd /home/ubuntu/monitoring_files
-                 sudo docker stack deploy --with-registry-auth --detach=false -c /home/ubuntu/monitoring_files/docker-compose.yaml monitoring_stack
+                  chmod +x app_compose_files/app_deploy.sh
+                  AWS_ACCOUNT_ID="${{ env.AWS_ACCOUNT_ID }}" \
+                  ENVIRONMENT="${{ env.ENVIRONMENT }}" \
+                  PRODUCT_REVIEW_VERSION="${{ env.PRODUCT_REVIEW_VERSION }}" \
+                  ./app_compose_files/app_deploy.sh
 
+                     
+          - name: Deploy docker monitoring_stack 
+            env:
+              SWARM_LEADER_IP: ${{ env.SWARM_LEADER_IP }}
+            uses: appleboy/ssh-action@master
+            with:
+              host: ${{ env.SWARM_LEADER_IP }}
+              username: ${{ secrets.WEBSERVER_USER }}
+              key: ${{ secrets.ANSIBLE_SSH_KEY }}
+              script: |
+                 chmod +x monitoring_files/monitoring_deploy.sh
+                 ./monitoring_files/monitoring_deploy.sh
          
